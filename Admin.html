@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Ethio Travel System</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container { max-width: 900px; margin: 40px auto; padding: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--box-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; background: var(--box-bg); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        th { background: #2c3e50; color: white; }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h3>Navigation</h3>
+            <ul>
+                <li><a href="dashboard.html">Overview</a></li>
+                <li><a href="payment.html">Route & Payment</a></li>
+                <li><a href="bookings.html">My Bookings</a></li>
+                <li><a href="admin.html" style="color: #3498db;">Admin Panel</a></li>
+                <li><a href="logout.html">Logout</a></li>
+            </ul>
+        </aside>
+        <main class="main-content">
+            <div class="admin-container">
+                <h2>System Administration Dashboard</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="totalBookings">0</h3>
+                        <p>Total Bookings</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalRevenue">0 ETB</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="activeBuses">4</h3>
+                        <p>Active Operators</p>
+                    </div>
+                </div>
+
+                <input type="text" id="searchInput" placeholder="Search by route or reference..." onkeyup="filterTable()" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--box-bg); color: var(--text-color);">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ref</th>
+                            <th>Route</th>
+                            <th>Bus Operator</th>
+                            <th>Date</th>
+                            <th>Provider</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script>
+        const bookings = JSON.parse(localStorage.getItem('user_bookings')) || [];
+        document.getElementById('totalBookings').innerText = bookings.length;
+
+        let revenue = bookings
+            .filter(b => b.status !== 'CANCELLED')
+            .reduce((acc, curr) => acc + parseFloat(curr.fare.split(' ')[0] || 0), 0);
+        document.getElementById('totalRevenue').innerText = revenue.toFixed(2) + ' ETB';
+
+        const tbody = document.getElementById('adminTableBody');
+        function renderTable(data) {
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No records found</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = data.map(b => `
+                <tr>
+                    <td>${b.ticketNo}</td>
+                    <td>${b.origin} ➔ ${b.destination}</td>
+                    <td>${b.bus}</td>
+                    <td>${b.date}</td>
+                    <td>${b.provider}</td>
+                    <td>${b.status}</td>
+                </tr>
+            `).join('');
+        }
+        renderTable(bookings);
+
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = bookings.filter(b => 
+                b.ticketNo.toLowerCase().includes(query) || 
+                b.origin.toLowerCase().includes(query) || 
+                b.destination.toLowerCase().includes(query)
+            );
+            renderTable(filtered);
+        }
+    </script>
+</body>
+</html>

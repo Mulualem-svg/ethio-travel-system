@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking History - Ethio Travel System</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .history-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .booking-card { background: var(--box-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .badge-confirmed { background: #2ecc71; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-cancelled { background: #e74c3c; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h3>Navigation</h3>
+            <ul>
+                <li><a href="dashboard.html">Overview</a></li>
+                <li><a href="payment.html">Route & Payment</a></li>
+                <li><a href="bookings.html" style="color: #3498db;">My Bookings</a></li>
+                <li><a href="admin.html">Admin Panel</a></li>
+                <li><a href="logout.html">Logout</a></li>
+            </ul>
+        </aside>
+        <main class="main-content">
+            <div class="history-container">
+                <h2>My Travel History</h2>
+                <div id="historyList" style="margin-top: 20px;"></div>
+            </div>
+        </main>
+    </div>
+    <script>
+        const bookings = JSON.parse(localStorage.getItem('user_bookings')) || [];
+        const container = document.getElementById('historyList');
+
+        if (bookings.length === 0) {
+            container.innerHTML = '<p>No travel history found.</p>';
+        } else {
+            container.innerHTML = bookings.map((b, index) => `
+                <div class="booking-card">
+                    <div>
+                        <strong>${b.origin} ➔ ${b.destination}</strong><br>
+                        <small>Bus: ${b.bus} | Date: ${b.date}</small><br>
+                        <small>Ref: ${b.ticketNo} | Paid: ${b.fare}</small>
+                    </div>
+                    <div>
+                        <span class="${b.status === 'CANCELLED' ? 'badge-cancelled' : 'badge-confirmed'}">${b.status}</span>
+                        ${b.status !== 'CANCELLED' ? `<br><button onclick="cancelBooking(${index})" style="margin-top:8px; background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Cancel</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cancelBooking(index) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                bookings[index].status = 'CANCELLED';
+                localStorage.setItem('user_bookings', JSON.stringify(bookings));
+                if(localStorage.getItem('user_booking')) {
+                    let active = JSON.parse(localStorage.getItem('user_booking'));
+                    if(active.ticketNo === bookings[index].ticketNo) {
+                        active.status = 'CANCELLED';
+                        localStorage.setItem('user_booking', JSON.stringify(active));
+                    }
+                }
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

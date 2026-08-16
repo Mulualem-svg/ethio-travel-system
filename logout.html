@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Logging out...</title>
+    <meta http-equiv="refresh" content="1;url=index.html">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div class="auth-box">
+        <h2>Logging out...</h2>
+        <p>You are being safely signed out of Ethio Travel System.</p>
+    </div>
+    <script>
+        localStorage.removeItem('user');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1000);
+    </script>
+</body>
+</html>

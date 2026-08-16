@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ethio Travel & Intercity System</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .full-page-flag {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: -1;
+        }
+        .bg-stripe-green { background-color: #078930; flex: 1; }
+        .bg-stripe-yellow { 
+            background-color: #fcd116; 
+            flex: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            position: relative;
+        }
+        .bg-stripe-red { background-color: #da121a; flex: 1; }
+
+        .flag-star-emblem {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            opacity: 0.22;
+            fill: #078930;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .full-page-flag::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: 0;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 560px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            z-index: 2;
+        }
+
+        body.dark-mode .auth-container {
+            background: rgba(30, 30, 30, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .auth-body {
+            padding: 55px 50px;
+            text-align: center;
+        }
+
+        .auth-logo { font-size: 38px; margin-bottom: 12px; }
+        .auth-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fcd116;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .auth-subtitle-am {
+            font-size: 17px;
+            color: #3498db;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .auth-subtitle-en {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 35px;
+            line-height: 1.6;
+        }
+        body.dark-mode .auth-subtitle-en { color: #b0c4de; }
+
+        .auth-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        .btn-login { background-color: #3498db; color: white; }
+        .btn-login:hover { background-color: #2980b9; }
+        .btn-register { background-color: #2ecc71; color: white; }
+        .btn-register:hover { background-color: #27ae60; }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="full-page-flag">
+        <div class="bg-stripe-green"></div>
+        <div class="bg-stripe-yellow">
+            <svg class="flag-star-emblem" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+            </svg>
+        </div>
+        <div class="bg-stripe-red"></div>
+    </div>
+
+    <button onclick="toggleTheme()" class="theme-toggle-btn">🌓</button>
+
+    <div class="auth-container">
+        <div class="auth-body">
+            <div class="auth-logo">🚌 ET 🚍</div>
+            <div class="auth-title">Autobus</div>
+            <div class="auth-subtitle-am">የኢትዮጵያ መንገድ ትራንስፖርት አገልግሎት</div>
+            <div class="auth-subtitle-en">Modernizing intercity bus booking, route discovery, and Telebirr payments across Ethiopia.</div>
+
+            <div class="auth-btn-group">
+                <a href="login.html" class="btn btn-login">Login</a>
+                <a href="register.html" class="btn btn-register">Register</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.remove('dark-mode');
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Travel Ticket - Ethio Travel System</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .ticket-box {
+            background: var(--box-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 40px auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: left;
+        }
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .ticket-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .ticket-row span:first-child {
+            color: #bdc3c7;
+            font-weight: 500;
+        }
+        .ticket-row span:last-child {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .ticket-total {
+            border-top: 1px solid var(--border-color);
+            margin-top: 15px;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        .status-badge {
+            background: #2ecc71;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h3 id="navTitle">Navigation</h3>
+            <ul>
+                <li><a href="dashboard.html" id="navOverview">Overview</a></li>
+                <li><a href="payment.html" id="navRoute">Route & Payment</a></li>
+                <li><a href="logout.html" id="navLogout">Logout</a></li>
+            </ul>
+        </aside>
+        
+        <main class="main-content">
+            <div class="ticket-box">
+                <div class="ticket-header">
+                    <h3 id="ticketBrand" style="margin: 0; color: #3498db;">🚌 Ethio Travel Ticket</h3>
+                    <span class="status-badge" id="statusBadge">PAID & CONFIRMED</span>
+                </div>
+
+                <div class="ticket-row">
+                    <span id="lblRef">Ticket Reference:</span>
+                    <span id="tRef">-</span>
+                </div>
+                <div class="ticket-row">
+                    <span id="lblPassenger">Passenger Name:</span>
+                    <span id="tPassenger">-</span>
+                </div>
+                <div class="ticket-row">
+                    <span id="lblRoute">Route:</span>
+                    <span id="tRoute">-</span>
+                </div>
+                <div class="ticket-row">
+                    <span id="lblDate">Travel Date:</span>
+                    <span id="tDate">-</span>
+                </div>
+                <div class="ticket-row">
+                    <span id="lblBus">Bus Operator:</span>
+                    <span id="tBus">-</span>
+                </div>
+                <div class="ticket-row">
+                    <span id="lblPayment">Payment Method:</span>
+                    <span id="tPayment">-</span>
+                </div>
+                <div class="ticket-row">
+                    <span id="lblAccount">Account / Phone:</span>
+                    <span id="tAccount">-</span>
+                </div>
+
+                <div class="ticket-total">
+                    <span id="lblTotal">Total Paid Fare:</span>
+                    <span id="tFare">-</span>
+                </div>
+
+                <div style="margin-top: 25px; text-align: center;">
+                    <button onclick="window.print()" class="btn-secondary" id="printBtn" style="width: 100%;">Print / Save Ticket</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    // Load booking data and render onto ticket
+    const savedBooking = JSON.parse(localStorage.getItem('user_booking'));
+    const currentUser = localStorage.getItem('current_user') || 'Traveler';
+
+    if (savedBooking) {
+        document.getElementById('tRef').innerText = savedBooking.ticketNo;
+        document.getElementById('tPassenger').innerText = currentUser;
+        document.getElementById('tRoute').innerText = `${savedBooking.origin} ➔ ${savedBooking.destination}`;
+        document.getElementById('tDate').innerText = savedBooking.date;
+        document.getElementById('tBus').innerText = savedBooking.bus;
+        document.getElementById('tPayment').innerText = savedBooking.provider || 'Telebirr';
+        document.getElementById('tAccount').innerText = savedBooking.account || 'N/A';
+        document.getElementById('tFare').innerText = savedBooking.fare;
+    } else {
+        document.querySelector('.ticket-box').innerHTML = `
+            <div style="text-align: center; padding: 30px; color: #7f8c8d;">
+                <h3 id="noTicketMsg">No active ticket found.</h3>
+                <p><a href="payment.html" style="color: #3498db;" id="bookLink">Go to Route & Payment to book a trip!</a></p>
+            </div>
+        `;
+    }
+
+    // Multi-Language Support
+    function applyLanguage(lang) {
+        if (lang === 'am') {
+            document.getElementById('navTitle').innerText = 'ማውጫ';
+            document.getElementById('navOverview').innerText = 'አጠቃላይ እይታ';
+            document.getElementById('navRoute').innerText = 'መስመር እና ክፍያ';
+            document.getElementById('navLogout').innerText = 'ውጣ';
+            document.getElementById('ticketBrand').innerText = '🚌 የኢትዮጵያ ጉዞ ትኬት';
+            document.getElementById('statusBadge').innerText = 'ተከፍሏል & ተረጋግጧል';
+            document.getElementById('lblRef').innerText = 'የተኬት መለያ ቁጥር:';
+            document.getElementById('lblPassenger').innerText = 'የተሳፋሪ ስም:';
+            document.getElementById('lblRoute').innerText = 'የጉዞ መስመር:';
+            document.getElementById('lblDate').innerText = 'የጉዞ ቀን:';
+            document.getElementById('lblBus').innerText = 'የአውቶቡስ ድርጅት:';
+            document.getElementById('lblPayment').innerText = 'የክፍያ ዘዴ:';
+            document.getElementById('lblAccount').innerText = 'ሂሳብ / ስልክ ቁጥር:';
+            document.getElementById('lblTotal').innerText = 'አጠቃላይ የተከፈለ ዋጋ:';
+            document.getElementById('printBtn').innerText = 'ትኬቱን አትም / አስቀምጥ';
+        } else if (lang === 'om') {
+            document.getElementById('navTitle').innerText = 'Kallattii';
+            document.getElementById('navOverview').innerText = 'Gabaasa Waliigalaa';
+            document.getElementById('navRoute').innerText = 'Karaa & Kaffaltii';
+            document.getElementById('navLogout').innerText = 'Ba\'i';
+            document.getElementById('ticketBrand').innerText = '🚌 Tikkeetii Imala Itoophiyaa';
+            document.getElementById('statusBadge').innerText = 'Kaffalameera & Mirkanaaeera';
+            document.getElementById('lblRef').innerText = 'Lakkoofsa Tikkeetii:';
+            document.getElementById('lblPassenger').innerText = 'Maqaa Imaltuu:';
+            document.getElementById('lblRoute').innerText = 'Kallattii Imalaa:';
+            document.getElementById('lblDate').innerText = 'Guyyaa Imala:';
+            document.getElementById('lblBus').innerText = 'Konkolaachisaa Bus:';
+            document.getElementById('lblPayment').innerText = 'Haala Kaffaltii:';
+            document.getElementById('lblAccount').innerText = 'Herrega / Lakkoofsa Bilbilaa:';
+            document.getElementById('lblTotal').innerText = 'Waliigala Kaffalame:';
+            document.getElementById('printBtn').innerText = 'Tikkeetii Maxxansi / Olkaa\'i';
+        } else if (lang === 'ti') {
+            document.getElementById('navTitle').innerText = 'መተሓሳሰቢ';
+            document.getElementById('navOverview').innerText = 'ጠቓላ ርእየት';
+            document.getElementById('navRoute').innerText = 'መስመርን ክፍያን';
+            document.getElementById('navLogout').innerText = 'ውጻእ';
+            document.getElementById('ticketBrand').innerText = '🚌 ናይ ጉዕዞ ትኬት ኢትዮጵያ';
+            document.getElementById('statusBadge').innerText = 'ተኸፊሉ & ተረጋጊጹ';
+            document.getElementById('lblRef').innerText = 'ቁጽሪ ትኬት:';
+            document.getElementById('lblPassenger').innerText = 'ስም ተጓዛኢ:';
+            document.getElementById('lblRoute').innerText = 'መስመር ጉዕዞ:';
+            document.getElementById('lblDate').innerText = 'ዕለተ ጉዕዞ:';
+            document.getElementById('lblBus').innerText = 'ኣውቶቡስ ኣገልግሎት:';
+            document.getElementById('lblPayment').innerText = 'የክፍያ ዘዴ:';
+            document.getElementById('lblAccount').innerText = 'ቁጽሪ ሕሳብ / ስልኪ:';
+            document.getElementById('lblTotal').innerText = 'ጠቅላላ ዝተኸፈለ ዋጋ:';
+            document.getElementById('printBtn').innerText = 'ትኬት ሕተም / ዓቀብ';
+        } else if (lang === 'so') {
+            document.getElementById('navTitle').innerText = 'Hagaha';
+            document.getElementById('navOverview').innerText = 'Guud mar';
+            document.getElementById('navRoute').innerText = 'Waddada & Lacag Bixinta';
+            document.getElementById('navLogout').innerText = 'Ka Bax';
+            document.getElementById('ticketBrand').innerText = '🚌 Tigidhka Safarka Itoobiya';
+            document.getElementById('statusBadge').innerText = 'LA BIXIYAY & LA XAQIIJIYAY';
+            document.getElementById('lblRef').innerText = 'Tigidhka Tixraaca:';
+            document.getElementById('lblPassenger').innerText = 'Magaca Rakaabka:';
+            document.getElementById('lblRoute').innerText = 'Waddada:';
+            document.getElementById('lblDate').innerText = 'Taariikhda Safarka:';
+            document.getElementById('lblBus').innerText = 'Shirkadda Baska:';
+            document.getElementById('lblPayment').innerText = 'Habka Lacag Bixinta:';
+            document.getElementById('lblAccount').innerText = 'Akoonka / Lambarka Telefoonka:';
+            document.getElementById('lblTotal').innerText = 'Wadarta Lacagta La Bixiyay:';
+            document.getElementById('printBtn').innerText = 'Daabaco / Kaydi Tigidhka';
+        }
+    }
+
+    const savedLang = localStorage.getItem('preferred_lang');
+    if (savedLang) {
+        applyLanguage(savedLang);
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.remove('dark-mode');
+    }
+    </script>
+</body>
+</html>
