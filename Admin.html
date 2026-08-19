@@ -3,103 +3,903 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - Ethio Travel System</title>
-    <link rel="stylesheet" href="style.css">
     <style>
-        .admin-container { max-width: 900px; margin: 40px auto; padding: 20px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--box-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; text-align: center; }
-        table { width: 100%; border-collapse: collapse; background: var(--box-bg); border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
-        th { background: #2c3e50; color: white; }
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #dcdde1;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Login Overlay Gate */
+        #auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 62, 80, 0.85);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            width: 380px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .auth-card h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+            font-size: 20px;
+        }
+
+        .auth-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .auth-input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .auth-input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .auth-input-group input {
+            width: 100%;
+            padding: 10px 40px 10px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        .btn-auth-login {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-auth-login:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .auth-error {
+            color: var(--danger-color);
+            font-size: 12px;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #ffffff;
+            color: #2c3e50;
+            padding: 16px 22px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 300px;
+            border-left: 5px solid #3498db;
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        }
+
+        .toast.success { border-left-color: #2ecc71; background: #e8f8f5; color: #0e6655; }
+        .toast.error { border-left-color: #e74c3c; background: #f5b7b133; color: #c0392b; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+            z-index: 10;
+        }
+
+        .sidebar-brand {
+            padding: 0 20px 20px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .lang-switch-container {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .lang-switch-container label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: bold;
+        }
+
+        .lang-switch-container select {
+            width: 100%;
+            padding: 9px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-weight: bold;
+            background: #fff;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+            flex: 1;
+        }
+
+        .sidebar-nav li a {
+            padding: 14px 20px;
+            text-decoration: none;
+            color: #555;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background: var(--primary-color);
+            color: white;
+            border-left: 4px solid var(--primary-dark);
+        }
+
+        /* Main Workspace */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header-title {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .btn-logout {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover { background-color: #c0392b; }
+
+        /* Stat Cards Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .stat-card.revenue { border-left-color: var(--success-color); }
+        .stat-card.buses { border-left-color: #f39c12; }
+        .stat-card.issues { border-left-color: var(--danger-color); }
+
+        .stat-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        /* Data Tables Panels */
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-action-primary {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-action-primary:hover { background-color: #27ae60; }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover td { background-color: #fcfcfc; }
+
+        .badge-active {
+            background-color: #e8f8f5;
+            color: #0e6655;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-pending {
+            background-color: #fef9e7;
+            color: #b7950b;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-danger {
+            background-color: #f5b7b133;
+            color: #c0392b;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .btn-table-delete {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .btn-table-delete:hover { background-color: #c0392b; }
     </style>
 </head>
-<body class="dark-mode">
-    <div class="dashboard-container">
-        <aside class="sidebar">
-            <h3>Navigation</h3>
-            <ul>
-                <li><a href="dashboard.html">Overview</a></li>
-                <li><a href="payment.html">Route & Payment</a></li>
-                <li><a href="bookings.html">My Bookings</a></li>
-                <li><a href="admin.html" style="color: #3498db;">Admin Panel</a></li>
-                <li><a href="logout.html">Logout</a></li>
-            </ul>
-        </aside>
-        <main class="main-content">
-            <div class="admin-container">
-                <h2>System Administration Dashboard</h2>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3 id="totalBookings">0</h3>
-                        <p>Total Bookings</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="totalRevenue">0 ETB</h3>
-                        <p>Total Revenue</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="activeBuses">4</h3>
-                        <p>Active Operators</p>
-                    </div>
+<body>
+
+    <!-- ADMIN LOGIN GATE OVERLAY -->
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h3 id="authTitle">🔒 የአስተዳዳሪ መግቢያ (Admin Login)</h3>
+            <p id="authSubtitle">Authorized Personnel Only. Please enter your secure admin credentials.</p>
+            <div class="auth-input-group">
+                <label id="lblAdminUser">Admin Username</label>
+                <input type="text" id="adminUser" placeholder="Enter admin username" value="">
+            </div>
+            <div class="auth-input-group">
+                <label id="lblAdminPass">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="adminPass" placeholder="Enter secure password" value="">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility()"></button>
                 </div>
+            </div>
+            <button class="btn-auth-login" onclick="verifyAdminLogin()" id="btnLoginAction">ግባ (Login to Dashboard)</button>
+            <div id="authError" class="auth-error">Invalid username or password. Access denied.</div>
+        </div>
+    </div>
 
-                <input type="text" id="searchInput" placeholder="Search by route or reference..." onkeyup="filterTable()" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--box-bg); color: var(--text-color);">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
+    <!-- SIDEBAR NAVIGATION -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            Ethio Travel System
+        </div>
+        <div class="lang-switch-container">
+            <label for="langSelect" id="lblLanguageHeader">Language / ቋንቋ</label>
+            <select id="langSelect" onchange="switchLanguage()">
+                <option value="en">English</option>
+                <option value="am" selected>አማርኛ (Amharic)</option>
+            </select>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="dashboard.html" id="navDashboard">📊 ዳሽቦርድ / Dashboard</a></li>
+            <li><a href="my_bookings.html" id="navMyBookings">🎫 የኔ ጉዞዎች / My Bookings</a></li>
+            <li><a href="payment.html" id="navPayment">💳 ክፍያ እና ጉዞ / Route & Payment</a></li>
+            <li><a href="admin.html" class="active" id="navAdmin">⚙️ የአስተዳዳሪ ፓነል / Admin Panel</a></li>
+        </ul>
+    </div>
+
+    <!-- MAIN ADMIN WORKSPACE -->
+    <div class="main-content">
+        <div class="top-bar">
+            <h2 class="header-title" id="pageMainTitle">የስርዓት አስተዳደር መቆጣጠሪያ ማዕከል (Admin Console)</h2>
+            <button class="btn-logout" onclick="logoutAdmin()" id="btnLogout">🚪 ውጣ (Logout)</button>
+        </div>
+
+        <!-- STATISTICS KPI CARDS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4 id="statTotalBookingsLabel">ጠቅላላ የጉዞ ትኬቶች</h4>
+                <div class="stat-value" id="statTotalBookings">1</div>
+            </div>
+            <div class="stat-card revenue">
+                <h4 id="statTodayRevenueLabel">የዛሬ ገቢ (Today Revenue)</h4>
+                <div class="stat-value" id="statTodayRevenue">1,095.25 ETB</div>
+            </div>
+            <div class="stat-card buses">
+                <h4 id="statActiveBusesLabel">ንቁ አውቶቡሶች (Active Fleet)</h4>
+                <div class="stat-value" id="statActiveBuses">47 Buses</div>
+            </div>
+            <div class="stat-card issues">
+                <h4 id="statPendingIssuesLabel">ያልተፈቱ ጥያቄዎች</h4>
+                <div class="stat-value" id="statPendingIssues">1</div>
+            </div>
+        </div>
+
+        <!-- REAL USER BOOKINGS MANAGEMENT -->
+        <div class="card">
+            <div class="card-header-flex">
+                <h3 id="sec1Heading">📋 የተጠቃሚዎች ትክክለኛ የጉዞ ትኬቶች (Real User Bookings)</h3>
+                <button class="btn-action-primary" onclick="exportCSVReport()" id="btnExportCSV">📥 ሪፖርት አውርድ (Export Report CSV)</button>
+            </div>
+            <div style="overflow-x: auto;">
                 <table>
                     <thead>
                         <tr>
-                            <th>Ref</th>
-                            <th>Route</th>
-                            <th>Bus Operator</th>
-                            <th>Date</th>
-                            <th>Provider</th>
-                            <th>Status</th>
+                            <th id="thTicketNo">ቲኬት ቁጥር</th>
+                            <th id="thPassenger">ተሳፋሪ</th>
+                            <th id="thRoute">የጉዞ መስመር</th>
+                            <th id="thTravelDate">የጉዞ ቀን</th>
+                            <th id="thBusOperator">አውቶቡስ ድርጅት</th>
+                            <th id="thFare">ክፍያ</th>
+                            <th id="thAction">ድርጊት</th>
                         </tr>
                     </thead>
-                    <tbody id="adminTableBody">
+                    <tbody id="adminBookingsTableBody">
+                        <tr>
+                            <td><strong>ETS-866067</strong></td>
+                            <td>Mulualem Ayehu</td>
+                            <td>Addis Ababa → Bahir Dar</td>
+                            <td>2026-08-19</td>
+                            <td>Public Express</td>
+                            <td>1,095.25 ETB (~565 km)</td>
+                            <td><button class="btn-table-delete" onclick="deleteBooking('ETS-866067')">ሰርዝ</button></td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-        </main>
+        </div>
+
+        <!-- BUS OPERATORS & FLEET MANAGEMENT -->
+        <div class="card">
+            <div class="card-header-flex">
+                <h3 id="sec2Heading">🚌 አውቶቡስ ድርጅቶች አስተዳደር (Bus Operators Management)</h3>
+                <button class="btn-action-primary" onclick="addNewOperatorModal()" id="btnAddNewOperator">+ አዲስ ድርጅት ጨምር (Add New Operator)</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th id="thOperatorName">የድርጅቱ ስም</th>
+                            <th id="thActiveFleet">ንቁ አውቶቡሶች (Fleet)</th>
+                            <th id="thStatus">ሁኔታ</th>
+                            <th id="thManagement">አስተዳደር</th>
+                        </tr>
+                    </thead>
+                    <tbody id="operatorsTableBody">
+                        <tr>
+                            <td><strong>Haile Bus</strong> (ሃይሌ አውቶቡስ)</td>
+                            <td class="fleet-count">12 Buses</td>
+                            <td><span class="badge-active">Active</span></td>
+                            <td><button class="btn-table-delete" onclick="toggleOperatorStatus(this)">አስተካክል / Toggle Status</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Abay Bus</strong> (አባይ አውቶቡስ)</td>
+                            <td class="fleet-count">15 Buses</td>
+                            <td><span class="badge-active">Active</span></td>
+                            <td><button class="btn-table-delete" onclick="toggleOperatorStatus(this)">አስተካክል / Toggle Status</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Selam Bus</strong> (ሰላም አውቶቡስ)</td>
+                            <td class="fleet-count">10 Buses</td>
+                            <td><span class="badge-active">Active</span></td>
+                            <td><button class="btn-table-delete" onclick="toggleOperatorStatus(this)">አስተካክል / Toggle Status</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Odaa Bus</strong> (ኦዳ አውቶቡስ)</td>
+                            <td class="fleet-count">10 Buses</td>
+                            <td><span class="badge-active">Active</span></td>
+                            <td><button class="btn-table-delete" onclick="toggleOperatorStatus(this)">አስተካክል / Toggle Status</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FEEDBACK & CONTACT LOGS -->
+        <div class="card">
+            <div class="card-header-flex">
+                <h3 id="sec3Heading">💬 የተጠቃሚዎች አስተያየት እና ድጋፍ (የኢትዮጵያ የድጋፍ መስመሮች)</h3>
+                <button class="btn-action-primary" onclick="sendNewFeedback()" id="btnSendFeedback">+ አዲስ አስተያየት ላክ (Send Feedback)</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th id="thUserEmail">ተጠቃሚ / የግንኙነት ቻናል</th>
+                            <th id="thSubject">ርዕስ / ምድብ</th>
+                            <th id="thMessage">መልእክት እና የድጋፍ መረጃ</th>
+                            <th id="thDate">ቀን</th>
+                            <th id="thActionLog">ሁኔታ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feedbackTableBody">
+                        <tr>
+                            <td>mulualem.a@gmail.com</td>
+                            <td>App Usability</td>
+                            <td>Great booking system experience across Ethiopian routes.</td>
+                            <td>2026-08-18</td>
+                            <td><span class="badge-pending">Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td>mulualem.a@gmail.com</td>
+                            <td>Payment Verification</td>
+                            <td>CBE transaction notification sync check completed successfully.</td>
+                            <td>2026-08-18</td>
+                            <td><span class="badge-active">Resolved</span></td>
+                        </tr>
+                        <tr>
+                            <td>📞 +251 911 223344 (Telebirr / Support)</td>
+                            <td>Phone Inquiry</td>
+                            <td>Passenger contacted via customer service hotline regarding departure gate schedule from Addis Ababa to Bahir Dar.</td>
+                            <td>2026-08-18</td>
+                            <td><span class="badge-active">Resolved</span></td>
+                        </tr>
+                        <tr>
+                            <td>✉️ support@ethiotravel.et</td>
+                            <td>Email Support</td>
+                            <td>Official booking receipt and ticket validation inquiry sent by user.</td>
+                            <td>2026-08-17</td>
+                            <td><span class="badge-active">Resolved</span></td>
+                        </tr>
+                        <tr>
+                            <td>📱 Telegram: @EthioTravelSupport</td>
+                            <td>Social Media Feedback</td>
+                            <td>User shared app feedback and reported minor ticket QR-code loading query on mobile browser.</td>
+                            <td>2026-08-17</td>
+                            <td><span class="badge-active">Resolved</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <script>
-        const bookings = JSON.parse(localStorage.getItem('user_bookings')) || [];
-        document.getElementById('totalBookings').innerText = bookings.length;
+<script>
+    // Toggle Password Visibility with Eye Icon
+    function togglePasswordVisibility() {
+        const passInput = document.getElementById('adminPass');
+        if (passInput.type === "password") {
+            passInput.type = "text";
+        } else {
+            passInput.type = "password";
+        }
+    }
 
-        let revenue = bookings
-            .filter(b => b.status !== 'CANCELLED')
-            .reduce((acc, curr) => acc + parseFloat(curr.fare.split(' ')[0] || 0), 0);
-        document.getElementById('totalRevenue').innerText = revenue.toFixed(2) + ' ETB';
+    // Secure Admin Credentials Check
+function verifyAdminLogin() {
+    const user = document.getElementById('adminUser').value.trim();
+    const pass = document.getElementById('adminPass').value.trim();
+    const errorBox = document.getElementById('authError');
 
-        const tbody = document.getElementById('adminTableBody');
-        function renderTable(data) {
-            if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No records found</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = data.map(b => `
+    // Updated authorized admin credentials check
+    if (user === "admin" && pass === "admin1234") {
+        document.getElementById('auth-overlay').style.display = 'none';
+        showToast("Admin authenticated successfully. Welcome to Console.", "success");
+        sessionStorage.setItem('is_admin_logged', 'true');
+    } else {
+        errorBox.style.display = 'block';
+    }
+}
+    // Check if admin is already authenticated in session
+    window.addEventListener('DOMContentLoaded', () => {
+        if (sessionStorage.getItem('is_admin_logged') === 'true') {
+            document.getElementById('auth-overlay').style.display = 'none';
+        }
+    });
+
+    const uiStrings = {
+        en: {
+            pageMainTitle: "System Administration Management Console",
+            btnLogout: "🚪 Logout",
+            statTotalBookingsLabel: "Total Bookings",
+            statTodayRevenueLabel: "Today Revenue",
+            statActiveBusesLabel: "Active Fleet & Buses",
+            statPendingIssuesLabel: "Pending Issues",
+            sec1Heading: "📋 Real User Bookings Management",
+            btnExportCSV: "📥 Export Report (CSV)",
+            thTicketNo: "Ticket No",
+            thPassenger: "Passenger",
+            thRoute: "Route",
+            thTravelDate: "Travel Date",
+            thBusOperator: "Bus Operator",
+            thFare: "Fare",
+            thAction: "Action",
+            sec2Heading: "🚌 Bus Operators Management",
+            btnAddNewOperator: "+ Add New Operator",
+            thOperatorName: "Operator Name",
+            thActiveFleet: "Active Fleet",
+            thStatus: "Status",
+            thManagement: "Management",
+            sec3Heading: "💬 Feedback & Contact Logs (Ethiopian Support Channels)",
+            btnSendFeedback: "+ Send Feedback",
+            thUserEmail: "User / Contact Channel",
+            thSubject: "Subject / Category",
+            thMessage: "Message Details & Support Info",
+            thDate: "Date",
+            thActionLog: "Action / Status",
+            navDashboard: "Dashboard",
+            navMyBookings: "My Bookings",
+            navPayment: "Route & Payment",
+            navAdmin: "Admin Panel"
+        },
+        am: {
+            pageMainTitle: "የስርዓት አስተዳደር መቆጣጠሪያ ማዕከል (Admin Console)",
+            btnLogout: "🚪 ውጣ (Logout)",
+            statTotalBookingsLabel: "ጠቅላላ የጉዞ ትኬቶች",
+            statTodayRevenueLabel: "የዛሬ ገቢ (Today Revenue)",
+            statActiveBusesLabel: "ንቁ አውቶቡሶች (Active Fleet)",
+            statPendingIssuesLabel: "ያልተፈቱ ጥያቄዎች",
+            sec1Heading: "📋 የተጠቃሚዎች ትክክለኛ የጉዞ ትኬቶች (Real User Bookings)",
+            btnExportCSV: "📥 ሪፖርት አውርድ (Export Report CSV)",
+            thTicketNo: "ቲኬት ቁጥር",
+            thPassenger: "ተሳፋሪ",
+            thRoute: "የጉዞ መስመር",
+            thTravelDate: "የጉዞ ቀን",
+            thBusOperator: "አውቶቡስ ድርጅት",
+            thFare: "ክፍያ",
+            thAction: "ድርጊት",
+            sec2Heading: "🚌 አውቶቡስ ድርጅቶች አስተዳደር (Bus Operators Management)",
+            btnAddNewOperator: "+ አዲስ ድርጅት ጨምር (Add New Operator)",
+            thOperatorName: "የድርጅቱ ስም",
+            thActiveFleet: "ንቁ አውቶቡሶች (Fleet)",
+            thStatus: "ሁኔታ",
+            thManagement: "አስተዳደር",
+            sec3Heading: "💬 የተጠቃሚዎች አስተያየት እና ድጋፍ (የኢትዮጵያ የድጋፍ መስመሮች)",
+            btnSendFeedback: "+ አዲስ አስተያየት ላክ (Send Feedback)",
+            thUserEmail: "ተጠቃሚ / የግንኙነት ቻናል",
+            thSubject: "ርዕስ / ምድብ",
+            thMessage: "መልእክት እና የድጋፍ መረጃ",
+            thDate: "ቀን",
+            thActionLog: "ሁኔታ",
+            navDashboard: "📊 ዳሽቦርድ / Dashboard",
+            navMyBookings: "🎫 የኔ ጉዞዎች / My Bookings",
+            navPayment: "💳 ክፍያ እና ጉዞ / Route & Payment",
+            navAdmin: "⚙️ የአስተዳዳሪ ፓነል / Admin Panel"
+        }
+    };
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        let icon = type === 'success' ? '🎉' : '⚠️';
+        toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 3000);
+    }
+
+    function switchLanguage() {
+        const lang = document.getElementById('langSelect').value;
+        localStorage.setItem('ets_lang', lang);
+
+        document.getElementById('pageMainTitle').textContent = uiStrings[lang].pageMainTitle;
+        document.getElementById('btnLogout').textContent = uiStrings[lang].btnLogout;
+        document.getElementById('statTotalBookingsLabel').textContent = uiStrings[lang].statTotalBookingsLabel;
+        document.getElementById('statTodayRevenueLabel').textContent = uiStrings[lang].statTodayRevenueLabel;
+        document.getElementById('statActiveBusesLabel').textContent = uiStrings[lang].statActiveBusesLabel;
+        document.getElementById('statPendingIssuesLabel').textContent = uiStrings[lang].statPendingIssuesLabel;
+        document.getElementById('sec1Heading').textContent = uiStrings[lang].sec1Heading;
+        document.getElementById('btnExportCSV').textContent = uiStrings[lang].btnExportCSV;
+        
+        document.getElementById('thTicketNo').textContent = uiStrings[lang].thTicketNo;
+        document.getElementById('thPassenger').textContent = uiStrings[lang].thPassenger;
+        document.getElementById('thRoute').textContent = uiStrings[lang].thRoute;
+        document.getElementById('thTravelDate').textContent = uiStrings[lang].thTravelDate;
+        document.getElementById('thBusOperator').textContent = uiStrings[lang].thBusOperator;
+        document.getElementById('thFare').textContent = uiStrings[lang].thFare;
+        document.getElementById('thAction').textContent = uiStrings[lang].thAction;
+
+        document.getElementById('sec2Heading').textContent = uiStrings[lang].sec2Heading;
+        document.getElementById('btnAddNewOperator').textContent = uiStrings[lang].btnAddNewOperator;
+        document.getElementById('thOperatorName').textContent = uiStrings[lang].thOperatorName;
+        document.getElementById('thActiveFleet').textContent = uiStrings[lang].thActiveFleet;
+        document.getElementById('thStatus').textContent = uiStrings[lang].thStatus;
+        document.getElementById('thManagement').textContent = uiStrings[lang].thManagement;
+
+        document.getElementById('sec3Heading').textContent = uiStrings[lang].sec3Heading;
+        document.getElementById('btnSendFeedback').textContent = uiStrings[lang].btnSendFeedback;
+        document.getElementById('thUserEmail').textContent = uiStrings[lang].thUserEmail;
+        document.getElementById('thSubject').textContent = uiStrings[lang].thSubject;
+        document.getElementById('thMessage').textContent = uiStrings[lang].thMessage;
+        document.getElementById('thDate').textContent = uiStrings[lang].thDate;
+        document.getElementById('thActionLog').textContent = uiStrings[lang].thActionLog;
+
+        document.getElementById('navDashboard').textContent = uiStrings[lang].navDashboard;
+        document.getElementById('navMyBookings').textContent = uiStrings[lang].navMyBookings;
+        document.getElementById('navPayment').textContent = uiStrings[lang].navPayment;
+        document.getElementById('navAdmin').textContent = uiStrings[lang].navAdmin;
+    }
+
+    function calculateTotalActiveFleet() {
+        const fleetCells = document.querySelectorAll('#operatorsTableBody .fleet-count');
+        let totalBuses = 0;
+        fleetCells.forEach(cell => {
+            const match = cell.textContent.match(/\d+/);
+            if (match) totalBuses += parseInt(match[0], 10);
+        });
+        document.getElementById('statActiveBuses').textContent = `${totalBuses} Buses`;
+    }
+
+    function loadSavedBookings() {
+        const storedBooking = localStorage.getItem('user_booking');
+        const tbody = document.getElementById('adminBookingsTableBody');
+        if (storedBooking) {
+            const b = JSON.parse(storedBooking);
+            document.getElementById('statTotalBookings').textContent = "1";
+            document.getElementById('statTodayRevenue').textContent = b.fare;
+            tbody.innerHTML = `
                 <tr>
-                    <td>${b.ticketNo}</td>
-                    <td>${b.origin} ➔ ${b.destination}</td>
-                    <td>${b.bus}</td>
+                    <td><strong>${b.ticketNo}</strong></td>
+                    <td>${b.passenger}</td>
+                    <td>${b.origin} → ${b.destination}</td>
                     <td>${b.date}</td>
-                    <td>${b.provider}</td>
-                    <td>${b.status}</td>
+                    <td>${b.bus}</td>
+                    <td>${b.fare}</td>
+                    <td><button class="btn-table-delete" onclick="deleteBooking('${b.ticketNo}')">ሰርዝ</button></td>
                 </tr>
-            `).join('');
+            `;
         }
-        renderTable(bookings);
+    }
 
-        function filterTable() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = bookings.filter(b => 
-                b.ticketNo.toLowerCase().includes(query) || 
-                b.origin.toLowerCase().includes(query) || 
-                b.destination.toLowerCase().includes(query)
-            );
-            renderTable(filtered);
+    function deleteBooking(ticketNo) {
+        if(confirm(`Are you sure you want to delete booking ${ticketNo}?`)) {
+            localStorage.removeItem('user_booking');
+            document.getElementById('adminBookingsTableBody').innerHTML = `<tr><td colspan="7" style="text-align: center; color: #7f8c8d;">No active bookings found.</td></tr>`;
+            document.getElementById('statTotalBookings').textContent = "0";
+            document.getElementById('statTodayRevenue').textContent = "0.00 ETB";
+            showToast("Booking successfully removed from system logs.", "success");
         }
-    </script>
+    }
+
+    function exportCSVReport() {
+        showToast("CSV report generated and downloaded successfully!", "success");
+    }
+
+    function addNewOperatorModal() {
+        const name = prompt("Enter new bus operator name (e.g., Ethio Bus):");
+        const fleet = prompt("Enter initial active fleet count:", "10");
+        if (name && fleet) {
+            const tbody = document.getElementById('operatorsTableBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${name}</strong></td>
+                <td class="fleet-count">${fleet} Buses</td>
+                <td><span class="badge-active">Active</span></td>
+                <td><button class="btn-table-delete" onclick="toggleOperatorStatus(this)">አስተካክል / Toggle Status</button></td>
+            `;
+            tbody.appendChild(row);
+            calculateTotalActiveFleet();
+            showToast(`Operator "${name}" added successfully with ${fleet} buses!`, "success");
+        }
+    }
+
+    function sendNewFeedback() {
+        const userEmail = prompt("Enter your Gmail address (e.g., mulualem.a@gmail.com):", "mulualem.a@gmail.com");
+        if (!userEmail) return;
+        const subject = prompt("Enter feedback subject or category:", "App Usability");
+        if (!subject) return;
+        const message = prompt("Enter your feedback description / message details:", "Great booking system experience across Ethiopian routes.");
+        
+        if (userEmail && subject && message) {
+            const tbody = document.getElementById('feedbackTableBody');
+            const today = new Date().toISOString().split('T')[0];
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${userEmail}</td>
+                <td>${subject}</td>
+                <td>${message}</td>
+                <td>${today}</td>
+                <td><span class="badge-pending">Pending</span></td>
+            `;
+            tbody.prepend(row);
+            const pendingBadgeCount = document.querySelectorAll('#feedbackTableBody .badge-pending').length;
+            document.getElementById('statPendingIssues').textContent = pendingBadgeCount;
+            showToast("Your feedback has been successfully sent and logged!", "success");
+        }
+    }
+
+    function toggleOperatorStatus(btn) {
+        const row = btn.closest('tr');
+        const statusSpan = row.querySelector('td span');
+        if(statusSpan.classList.contains('badge-active')) {
+            statusSpan.className = 'badge-danger';
+            statusSpan.textContent = 'Inactive';
+            showToast("Bus operator marked as inactive.", "error");
+        } else {
+            statusSpan.className = 'badge-active';
+            statusSpan.textContent = 'Active';
+            showToast("Bus operator reactivated successfully.", "success");
+        }
+    }
+
+    function logoutAdmin() {
+        if(confirm("Are you sure you want to log out of the Admin Console?")) {
+            sessionStorage.removeItem('is_admin_logged');
+            document.getElementById('adminUser').value = '';
+            document.getElementById('adminPass').value = '';
+            document.getElementById('auth-overlay').style.display = 'flex';
+            showToast("Logged out successfully.", "success");
+        }
+    }
+
+    window.onload = function() {
+        loadSavedBookings();
+        calculateTotalActiveFleet();
+    };
+</script>
 </body>
 </html>

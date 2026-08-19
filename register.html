@@ -3,45 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <title>Register - Ethio Travel System</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body.auth-body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #111;
+            position: relative;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Left Side Bus Background */
+        body.auth-body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80') no-repeat center center/cover;
+            filter: brightness(0.45);
+            z-index: 1;
+        }
+
+        /* Right Side Bus Background */
+        body.auth-body::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=1200&q=80') no-repeat center center/cover;
+            filter: brightness(0.45);
+            z-index: 1;
+        }
+
+        /* Registration Card Wrapper */
+        .register-wrapper {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 520px;
+            padding: 25px;
+        }
+
+        .register-card {
+            background: rgba(22, 22, 22, 0.95);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+        }
+
+        .register-card h2 {
+            text-align: center;
+            color: #3498db;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 6px;
+            border: 1px solid #555;
+            font-size: 16px;
+            font-weight: bold;
+            box-sizing: border-box;
+        }
+
+        /* Field 1: Green Input */
+        #fullName {
+            background-color: #2ecc71; 
+            border-color: #27ae60;
+            color: #ffffff;
+        }
+        #fullName::placeholder {
+            color: #e8f8f5;
+        }
+
+        /* Field 2: Yellow Input */
+        #phoneNumber {
+            background-color: #f1c40f; 
+            border-color: #f39c12;
+            color: #111111; 
+        }
+        #phoneNumber::placeholder {
+            color: #555555;
+        }
+
+        /* Field 3: Red Input with space for eye icon */
+        #password {
+            background-color: #e74c3c; 
+            border-color: #c0392b;
+            color: #ffffff;
+            padding-right: 45px;
+        }
+        #password::placeholder {
+            color: #fadbd8;
+        }
+
+        /* Password Toggle Eye Icon */
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: #fff;
+            user-select: none;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.9);
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-register:hover {
+            background-color: #2980b9;
+        }
+
+        /* Notification Banners */
+        #alertBox {
+            display: none;
+            background: #27ae60;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        #errorBox {
+            display: none;
+            background: #c0392b;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #ccc;
+            font-size: 15px;
+        }
+
+        .auth-footer a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
-<body class="dark-mode">
+<body class="auth-body">
 
-    <button onclick="toggleTheme()" class="theme-toggle-btn" title="Toggle Theme">🌓</button>
+    <div class="register-wrapper">
+        <div class="register-card">
+            <h2>Create an Account</h2>
+            
+            <!-- Notification Banners -->
+            <div id="alertBox">Congratulations! Redirecting to login...</div>
+            <div id="errorBox"></div>
 
-    <div class="auth-box hero-bg">
-        <h2>Create an Account</h2>
-        <form id="registerForm">
-            <input type="text" id="regUser" name="username" placeholder="Choose Username or Phone" required>
-            <input type="password" id="regPass" name="password" placeholder="Create Password" required>
-            <button type="submit" class="btn-primary">Register & Continue</button>
-        </form>
-
-        <p style="margin-top: 15px;">Already have an account? <a href="login.html" style="color: #3498db;">Login here</a> | <a href="index.html" style="color: #3498db;">Back to Home</a></p>
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <input type="text" id="fullName" placeholder="Enter Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="phoneNumber" placeholder="Enter Phone Number (e.g. 0911223344)" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Create Password (letters & numbers, min 6 chars)" required>
+                    <span class="toggle-password" id="togglePasswordBtn" onclick="togglePasswordVisibility()"></span>
+                </div>
+                <button type="submit" class="btn-register">Register & Continue</button>
+            </form>
+            <div class="auth-footer">
+                Already have an account? <a href="login.html">Login here</a>
+            </div>
+        </div>
     </div>
 
     <script>
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const user = document.getElementById('regUser').value;
-        const pass = document.getElementById('regPass').value;
-        
-        // Save to localStorage for login autofill & suggestions
-        localStorage.setItem('registered_user', user);
-        localStorage.setItem('registered_pass', pass);
-        localStorage.setItem('current_user', user);
-        
-        alert('Registration successful! Redirecting to dashboard...');
-        window.location.href = 'dashboard.html';
-    });
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.getElementById('togglePasswordBtn');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = '👁️‍🗨️';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        }
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    }
-    if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.remove('dark-mode');
-    }
+        function handleRegister(e) {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const password = document.getElementById('password').value;
+            
+            const alertBox = document.getElementById('alertBox');
+            const errorBox = document.getElementById('errorBox');
+            
+            // Reset messages
+            alertBox.style.display = 'none';
+            errorBox.style.display = 'none';
+
+            // 1. Validate Full Name
+            if (fullName.length < 3) {
+                showError("Full name must be at least 3 characters long.");
+                return;
+            }
+
+            // 2. Validate Ethiopian Phone Number
+            const phoneRegex = /^(09\d{8}|\+251\d{9})$/;
+            if (!phoneRegex.test(phoneNumber)) {
+                showError("Please enter a valid Ethiopian phone number (e.g., 0911223344 or +251911223344).");
+                return;
+            }
+
+            // 3. Validate Password: Must contain letters and numbers, at least 6 characters long (No strict special character required)
+            const alphaNumericRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+            if (!alphaNumericRegex.test(password)) {
+                showError("Password must be at least 6 characters long and contain both letters and numbers.");
+                return;
+            }
+
+            // Save credentials for login validation
+            localStorage.setItem('ets_user_name', fullName);
+            localStorage.setItem('ets_user_phone', phoneNumber);
+            localStorage.setItem('ets_user_password', password);
+            
+            // Show success banner with "Congratulations" and redirect to login.html
+            alertBox.style.display = 'block';
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+        }
+
+        function showError(message) {
+            const errorBox = document.getElementById('errorBox');
+            errorBox.textContent = message;
+            errorBox.style.display = 'block';
+        }
     </script>
 </body>
 </html>

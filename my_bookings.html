@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard & Booking - Ethio Travel System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .dashboard-card {
+            background: rgba(22, 22, 22, 0.95);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: left;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+            max-width: 480px;
+            width: 100%;
+        }
+        h1 {
+            color: #3498db;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 22px;
+        }
+        p {
+            color: #ccc;
+            font-size: 14px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #555;
+            background-color: #222;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        .btn-action:hover {
+            background-color: #2980b9;
+        }
+        .btn-logout {
+            background-color: #e74c3c;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-logout:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-card">
+        <h1>Welcome, <span id="userName">User</span>!</h1>
+        <p>Complete your booking details for the Ethio Travel System.</p>
+        
+        <!-- Booking Form Fields -->
+        <div class="form-group">
+            <label>Booking For:</label>
+            <select id="bookingForSelect">
+                <option value="myself">For Myself</option>
+                <option value="others">For Others</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Passenger Name:</label>
+            <input type="text" id="passengerNameInput" placeholder="Enter passenger name">
+        </div>
+
+        <!-- Hidden/Default Sample Fields for Route, Date, Bus, Seat, Fare -->
+        <input type="hidden" id="originSelect" value="Ambo">
+        <input type="hidden" id="destSelect" value="Addis Ababa">
+        <input type="hidden" id="dateInput" value="2026-09-04">
+        <input type="hidden" id="busSelect" value="Selam Bus">
+        <input type="hidden" id="seatInput" value="02">
+        <div id="fareDisplay" style="display:none;">262.75 ETB (~115 km)</div>
+
+        <div class="btn-container">
+            <button type="button" class="btn-action" onclick="saveBookingDetails()">Confirm & Generate Ticket</button>
+            <a href="register.html" class="btn-action btn-logout" onclick="logout()">Logout</a>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in via localStorage and auto-fill passenger name
+        const currentUser = localStorage.getItem('logged_in_user') || localStorage.getItem('current_user');
+
+        if (!currentUser) {
+            localStorage.setItem('logged_in_user', 'Mulualem Ayehu');
+            document.getElementById('userName').textContent = 'Mulualem Ayehu';
+            document.getElementById('passengerNameInput').value = 'Mulualem Ayehu';
+        } else {
+            document.getElementById('userName').textContent = currentUser;
+            document.getElementById('passengerNameInput').value = currentUser;
+        }
+
+        function saveBookingDetails() {
+            let bookingType = document.getElementById('bookingForSelect').value; // 'myself' or 'others'
+            let passengerName = document.getElementById('passengerNameInput').value;
+            
+            // Base fare amount parsing (extracts the number before 'ETB')
+            let baseFareText = document.getElementById('fareDisplay').textContent;
+            let baseFareValue = parseFloat(baseFareText.replace(/[^0-9.]/g, '')) || 262.75;
+            let calculatedFare = baseFareValue;
+            let passengerCountVal = "1";
+
+            // If booking for others, prompt with strict validation for Ethiopian Phone & Number of Passengers
+            let phone = "";
+            if (bookingType === 'others') {
+                while (true) {
+                    phone = prompt("Enter passenger's phone number (e.g., 0912345678):");
+                    if (phone === null) return; // User clicked Cancel
+                    
+                    let phoneRegex = /^(09|07)\d{8}$|^\+251(9|7)\d{8}$/;
+                    if (phoneRegex.test(phone.trim())) {
+                        break;
+                    } else {
+                        alert("❌ Invalid Ethiopian phone number! Must start with 09, 07, or +251 and be precisely 10 digits.");
+                    }
+                }
+
+                while (true) {
+                    passengerCountVal = prompt("Enter number of passengers (Qty):", "1");
+                    if (passengerCountVal === null) return; // User clicked Cancel
+                    
+                    let qtyRegex = /^[1-9][0-9]*$/;
+                    if (qtyRegex.test(passengerCountVal.trim())) {
+                        break;
+                    } else {
+                        alert("❌ Invalid quantity! Please enter a valid number greater than 0.");
+                    }
+                }
+
+                // Multiply total fare by the number of passengers
+                calculatedFare = baseFareValue * parseInt(passengerCountVal.trim());
+            }
+
+            let bookingData = {
+                ticketNo: "ETS-" + Math.floor(100000 + Math.random() * 900000),
+                passenger: passengerName,
+                bookingFor: bookingType,
+                origin: document.getElementById('originSelect').value,
+                destination: document.getElementById('destSelect').value,
+                date: document.getElementById('dateInput').value,
+                bus: document.getElementById('busSelect').value,
+                seat: document.getElementById('seatInput').value,
+                fare: calculatedFare.toFixed(2) + " ETB (~115 km)"
+            };
+
+            if (bookingType === 'others') {
+                bookingData.otherPhone = phone.trim();
+                bookingData.passengerCount = passengerCountVal.trim();
+            }
+
+            localStorage.setItem('user_booking', JSON.stringify(bookingData));
+            window.location.href = 'ticket.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('logged_in_user');
+            localStorage.removeItem('current_user');
+        }
+    </script>
+</body>
+</html>

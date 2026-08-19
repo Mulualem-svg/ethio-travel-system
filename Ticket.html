@@ -2,226 +2,403 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Travel Ticket - Ethio Travel System</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Boarding Pass - Ethio Travel System</title>
     <style>
-        .ticket-box {
-            background: var(--box-bg);
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 600px;
-            margin: 40px auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            text-align: left;
+        :root {
+            --primary: #1e3d59;
+            --accent: #17b978;
+            --accent-dark: #0e915d;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-main: #2b2d42;
+            --text-muted: #8d99ae;
+            --border-color: #e2e8f0;
         }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #ffffff;
+            color: var(--text-main);
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border-left: 5px solid var(--accent);
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* Boarding Pass Wrapper */
+        .ticket-wrapper {
+            background: var(--card-bg);
+            width: 820px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Ticket Top Banner */
         .ticket-header {
+            background: linear-gradient(135deg, #1e3d59 0%, #17b978 100%);
+            color: white;
+            padding: 25px 35px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
         }
-        .ticket-row {
+
+        .brand-title {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 15px;
+            align-items: center;
+            gap: 10px;
         }
-        .ticket-row span:first-child {
-            color: #bdc3c7;
-            font-weight: 500;
-        }
-        .ticket-row span:last-child {
-            font-weight: bold;
-            color: var(--text-color);
-        }
-        .ticket-total {
-            border-top: 1px solid var(--border-color);
-            margin-top: 15px;
-            padding-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            font-weight: bold;
-            color: #2ecc71;
-        }
-        .status-badge {
-            background: #2ecc71;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
+
+        .verified-badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            padding: 6px 16px;
+            border-radius: 20px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main Body Grid */
+        .ticket-body {
+            padding: 30px 35px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            position: relative;
+        }
+
+        .main-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .ticket-group label {
+            display: block;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .ticket-group .value {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .ticket-group .value.highlight {
+            color: #2575fc;
+            font-size: 17px;
+        }
+
+        /* Side Stub Section */
+        .ticket-stub {
+            background: #f8fafc;
+            border-left: 2px dashed var(--border-color);
+            padding-left: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .stub-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Fare Banner Across Bottom */
+        .fare-banner {
+            grid-column: span 2;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 14px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .fare-banner .fare-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: #166534;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .fare-banner .fare-amount {
+            font-size: 18px;
+            font-weight: 800;
+            color: #15803d;
+        }
+
+        /* Footer Actions */
+        .ticket-footer {
+            padding: 20px 35px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .btn-ticket {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-print {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(23, 185, 120, 0.25);
+        }
+
+        .btn-print:hover {
+            background-color: var(--accent-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-back {
+            background-color: #cbd5e1;
+            color: #334155;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background-color: #94a3b8;
+        }
+
+        /* Print Settings */
+        @media print {
+            body {
+                background-color: #ffffff;
+                height: auto;
+            }
+            .ticket-footer, #toast-container {
+                display: none !important;
+            }
+            .ticket-wrapper {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                width: 100%;
+            }
+            @page {
+                margin: 0.4in;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ticket-wrapper {
+                width: 92%;
+                margin: 20px;
+            }
+            .ticket-body {
+                grid-template-columns: 1fr;
+            }
+            .ticket-stub {
+                border-left: none;
+                border-top: 2px dashed var(--border-color);
+                padding-left: 0;
+                padding-top: 25px;
+            }
+            .fare-banner {
+                grid-column: span 1;
+            }
         }
     </style>
 </head>
-<body class="dark-mode">
-    <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+<body>
 
-    <div class="dashboard-container">
-        <aside class="sidebar">
-            <h3 id="navTitle">Navigation</h3>
-            <ul>
-                <li><a href="dashboard.html" id="navOverview">Overview</a></li>
-                <li><a href="payment.html" id="navRoute">Route & Payment</a></li>
-                <li><a href="logout.html" id="navLogout">Logout</a></li>
-            </ul>
-        </aside>
-        
-        <main class="main-content">
-            <div class="ticket-box">
-                <div class="ticket-header">
-                    <h3 id="ticketBrand" style="margin: 0; color: #3498db;">🚌 Ethio Travel Ticket</h3>
-                    <span class="status-badge" id="statusBadge">PAID & CONFIRMED</span>
-                </div>
+    <div id="toast-container"></div>
 
-                <div class="ticket-row">
-                    <span id="lblRef">Ticket Reference:</span>
-                    <span id="tRef">-</span>
-                </div>
-                <div class="ticket-row">
-                    <span id="lblPassenger">Passenger Name:</span>
-                    <span id="tPassenger">-</span>
-                </div>
-                <div class="ticket-row">
-                    <span id="lblRoute">Route:</span>
-                    <span id="tRoute">-</span>
-                </div>
-                <div class="ticket-row">
-                    <span id="lblDate">Travel Date:</span>
-                    <span id="tDate">-</span>
-                </div>
-                <div class="ticket-row">
-                    <span id="lblBus">Bus Operator:</span>
-                    <span id="tBus">-</span>
-                </div>
-                <div class="ticket-row">
-                    <span id="lblPayment">Payment Method:</span>
-                    <span id="tPayment">-</span>
-                </div>
-                <div class="ticket-row">
-                    <span id="lblAccount">Account / Phone:</span>
-                    <span id="tAccount">-</span>
+    <div class="ticket-wrapper">
+        <!-- Header Banner -->
+        <div class="ticket-header">
+            <div class="brand-title">
+                🎫 <span>ኢትዮ የጉዞ ሲስተም (Ethio Travel System)</span>
+            </div>
+            <div class="verified-badge">
+                ✓ VERIFIED PASS
+            </div>
+        </div>
+
+        <!-- Ticket Content Body -->
+        <div class="ticket-body">
+            <div class="main-details">
+                <div class="ticket-group">
+                    <label>ትኬት ቁጥር / TICKET NO</label>
+                    <div class="value highlight" id="ticketNoDisplay">ETS-861268</div>
                 </div>
 
-                <div class="ticket-total">
-                    <span id="lblTotal">Total Paid Fare:</span>
-                    <span id="tFare">-</span>
+                <div class="ticket-group">
+                    <label>ተሳፋሪ / PASSENGER NAME</label>
+                    <div class="value" id="passengerNameDisplay">Mulualem Ayehu</div>
                 </div>
 
-                <div style="margin-top: 25px; text-align: center;">
-                    <button onclick="window.print()" class="btn-secondary" id="printBtn" style="width: 100%;">Print / Save Ticket</button>
+                <div class="ticket-group">
+                    <label>ስልክ ቁጥር / PHONE NUMBER</label>
+                    <div class="value" id="phoneDisplay">-</div>
+                </div>
+
+                <div class="ticket-group">
+                    <label>ቦታ ማስያዣ ዓይነት / BOOKING TYPE</label>
+                    <div class="value" id="bookingTypeDisplay">For Myself</div>
+                </div>
+
+                <div class="ticket-group">
+                    <label>መስመር / ROUTE</label>
+                    <div class="value" id="routeDisplay">Adwa → Mekelle</div>
+                </div>
+
+                <div class="ticket-group">
+                    <label>ጉዞ ቀን / TRAVEL DATE</label>
+                    <div class="value" id="travelDateDisplay">2026-08-19</div>
+                </div>
+
+                <div class="ticket-group">
+                    <label>አውቶቡስ / BUS OPERATOR</label>
+                    <div class="value" id="busOperatorDisplay">Abay Bus</div>
+                </div>
+
+                <div class="ticket-group">
+                    <label>ወንበር / SEAT NO</label>
+                    <div class="value highlight" id="seatDisplay">01</div>
+                </div>
+
+                <div class="fare-banner">
+                    <span class="fare-label">ጠቅላላ ዋጋ / Total Fare:</span>
+                    <span class="fare-amount" id="fareDisplay">475.50 ETB (~230 km)</span>
                 </div>
             </div>
-        </main>
+
+            <!-- Boarding Pass Barcode Stub Side -->
+            <div class="ticket-stub">
+                <div style="font-family: monospace; font-size: 14px; letter-spacing: 2px; font-weight: bold; background: #fff; border: 1px solid #cbd5e1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; border-radius: 6px;">
+                    <div style="font-size: 22px; letter-spacing: 4px; margin-bottom: 4px;">║█║▌║█</div>
+                    <div style="font-size: 10px; color: #64748b;">ETS-PASS</div>
+                </div>
+                <div class="stub-text" style="margin-top: 8px;">Scan for Boarding</div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;" id="stubTicketNo">ETS-861268</div>
+            </div>
+        </div>
+
+        <!-- Action Footer -->
+        <div class="ticket-footer">
+            <button class="btn-ticket btn-print" onclick="printTicket()">
+                🖨️ ቲኬት አትም / Print Ticket
+            </button>
+            <a href="index.html" class="btn-ticket btn-back" id="btnBack">
+                ⬅️ ወደ ኋላ / Back
+            </a>
+        </div>
     </div>
 
     <script>
-    // Load booking data and render onto ticket
-    const savedBooking = JSON.parse(localStorage.getItem('user_booking'));
-    const currentUser = localStorage.getItem('current_user') || 'Traveler';
+        function loadTicketData() {
+            const storedBooking = localStorage.getItem('user_booking');
+            
+            if (storedBooking) {
+                const b = JSON.parse(storedBooking);
+                
+                let ticketNo = b.ticketNo || "ETS-861268";
+                document.getElementById('ticketNoDisplay').textContent = ticketNo;
+                document.getElementById('stubTicketNo').textContent = ticketNo;
+                
+                // Separate passenger and phone neatly
+                let passengerStr = b.passenger || "Mulualem Ayehu";
+                let bookingType = b.bookingFor || "myself";
+                
+                document.getElementById('passengerNameDisplay').textContent = passengerStr;
 
-    if (savedBooking) {
-        document.getElementById('tRef').innerText = savedBooking.ticketNo;
-        document.getElementById('tPassenger').innerText = currentUser;
-        document.getElementById('tRoute').innerText = `${savedBooking.origin} ➔ ${savedBooking.destination}`;
-        document.getElementById('tDate').innerText = savedBooking.date;
-        document.getElementById('tBus').innerText = savedBooking.bus;
-        document.getElementById('tPayment').innerText = savedBooking.provider || 'Telebirr';
-        document.getElementById('tAccount').innerText = savedBooking.account || 'N/A';
-        document.getElementById('tFare').innerText = savedBooking.fare;
-    } else {
-        document.querySelector('.ticket-box').innerHTML = `
-            <div style="text-align: center; padding: 30px; color: #7f8c8d;">
-                <h3 id="noTicketMsg">No active ticket found.</h3>
-                <p><a href="payment.html" style="color: #3498db;" id="bookLink">Go to Route & Payment to book a trip!</a></p>
-            </div>
-        `;
-    }
+                if (bookingType === "myself") {
+                    document.getElementById('bookingTypeDisplay').textContent = "For Myself";
+                    document.getElementById('phoneDisplay').textContent = b.phone || "N/A";
+                } else {
+                    let countText = b.passengerCount ? ` (Qty: ${b.passengerCount})` : '';
+                    document.getElementById('bookingTypeDisplay').textContent = `For Others${countText}`;
+                    document.getElementById('phoneDisplay').textContent = b.otherPhone || b.phone || "N/A";
+                }
 
-    // Multi-Language Support
-    function applyLanguage(lang) {
-        if (lang === 'am') {
-            document.getElementById('navTitle').innerText = 'ማውጫ';
-            document.getElementById('navOverview').innerText = 'አጠቃላይ እይታ';
-            document.getElementById('navRoute').innerText = 'መስመር እና ክፍያ';
-            document.getElementById('navLogout').innerText = 'ውጣ';
-            document.getElementById('ticketBrand').innerText = '🚌 የኢትዮጵያ ጉዞ ትኬት';
-            document.getElementById('statusBadge').innerText = 'ተከፍሏል & ተረጋግጧል';
-            document.getElementById('lblRef').innerText = 'የተኬት መለያ ቁጥር:';
-            document.getElementById('lblPassenger').innerText = 'የተሳፋሪ ስም:';
-            document.getElementById('lblRoute').innerText = 'የጉዞ መስመር:';
-            document.getElementById('lblDate').innerText = 'የጉዞ ቀን:';
-            document.getElementById('lblBus').innerText = 'የአውቶቡስ ድርጅት:';
-            document.getElementById('lblPayment').innerText = 'የክፍያ ዘዴ:';
-            document.getElementById('lblAccount').innerText = 'ሂሳብ / ስልክ ቁጥር:';
-            document.getElementById('lblTotal').innerText = 'አጠቃላይ የተከፈለ ዋጋ:';
-            document.getElementById('printBtn').innerText = 'ትኬቱን አትም / አስቀምጥ';
-        } else if (lang === 'om') {
-            document.getElementById('navTitle').innerText = 'Kallattii';
-            document.getElementById('navOverview').innerText = 'Gabaasa Waliigalaa';
-            document.getElementById('navRoute').innerText = 'Karaa & Kaffaltii';
-            document.getElementById('navLogout').innerText = 'Ba\'i';
-            document.getElementById('ticketBrand').innerText = '🚌 Tikkeetii Imala Itoophiyaa';
-            document.getElementById('statusBadge').innerText = 'Kaffalameera & Mirkanaaeera';
-            document.getElementById('lblRef').innerText = 'Lakkoofsa Tikkeetii:';
-            document.getElementById('lblPassenger').innerText = 'Maqaa Imaltuu:';
-            document.getElementById('lblRoute').innerText = 'Kallattii Imalaa:';
-            document.getElementById('lblDate').innerText = 'Guyyaa Imala:';
-            document.getElementById('lblBus').innerText = 'Konkolaachisaa Bus:';
-            document.getElementById('lblPayment').innerText = 'Haala Kaffaltii:';
-            document.getElementById('lblAccount').innerText = 'Herrega / Lakkoofsa Bilbilaa:';
-            document.getElementById('lblTotal').innerText = 'Waliigala Kaffalame:';
-            document.getElementById('printBtn').innerText = 'Tikkeetii Maxxansi / Olkaa\'i';
-        } else if (lang === 'ti') {
-            document.getElementById('navTitle').innerText = 'መተሓሳሰቢ';
-            document.getElementById('navOverview').innerText = 'ጠቓላ ርእየት';
-            document.getElementById('navRoute').innerText = 'መስመርን ክፍያን';
-            document.getElementById('navLogout').innerText = 'ውጻእ';
-            document.getElementById('ticketBrand').innerText = '🚌 ናይ ጉዕዞ ትኬት ኢትዮጵያ';
-            document.getElementById('statusBadge').innerText = 'ተኸፊሉ & ተረጋጊጹ';
-            document.getElementById('lblRef').innerText = 'ቁጽሪ ትኬት:';
-            document.getElementById('lblPassenger').innerText = 'ስም ተጓዛኢ:';
-            document.getElementById('lblRoute').innerText = 'መስመር ጉዕዞ:';
-            document.getElementById('lblDate').innerText = 'ዕለተ ጉዕዞ:';
-            document.getElementById('lblBus').innerText = 'ኣውቶቡስ ኣገልግሎት:';
-            document.getElementById('lblPayment').innerText = 'የክፍያ ዘዴ:';
-            document.getElementById('lblAccount').innerText = 'ቁጽሪ ሕሳብ / ስልኪ:';
-            document.getElementById('lblTotal').innerText = 'ጠቅላላ ዝተኸፈለ ዋጋ:';
-            document.getElementById('printBtn').innerText = 'ትኬት ሕተም / ዓቀብ';
-        } else if (lang === 'so') {
-            document.getElementById('navTitle').innerText = 'Hagaha';
-            document.getElementById('navOverview').innerText = 'Guud mar';
-            document.getElementById('navRoute').innerText = 'Waddada & Lacag Bixinta';
-            document.getElementById('navLogout').innerText = 'Ka Bax';
-            document.getElementById('ticketBrand').innerText = '🚌 Tigidhka Safarka Itoobiya';
-            document.getElementById('statusBadge').innerText = 'LA BIXIYAY & LA XAQIIJIYAY';
-            document.getElementById('lblRef').innerText = 'Tigidhka Tixraaca:';
-            document.getElementById('lblPassenger').innerText = 'Magaca Rakaabka:';
-            document.getElementById('lblRoute').innerText = 'Waddada:';
-            document.getElementById('lblDate').innerText = 'Taariikhda Safarka:';
-            document.getElementById('lblBus').innerText = 'Shirkadda Baska:';
-            document.getElementById('lblPayment').innerText = 'Habka Lacag Bixinta:';
-            document.getElementById('lblAccount').innerText = 'Akoonka / Lambarka Telefoonka:';
-            document.getElementById('lblTotal').innerText = 'Wadarta Lacagta La Bixiyay:';
-            document.getElementById('printBtn').innerText = 'Daabaco / Kaydi Tigidhka';
+                document.getElementById('routeDisplay').textContent = `${b.origin} → ${b.destination}`;
+                document.getElementById('travelDateDisplay').textContent = b.date || "2026-08-19";
+                document.getElementById('busOperatorDisplay').textContent = b.bus || "Abay Bus";
+                
+                let seatNum = b.seat || "01";
+                seatNum = seatNum.replace(/^Seat\s+/i, '');
+                document.getElementById('seatDisplay').textContent = seatNum;
+
+                document.getElementById('fareDisplay').textContent = b.fare || "475.50 ETB (~230 km)";
+            }
         }
-    }
 
-    const savedLang = localStorage.getItem('preferred_lang');
-    if (savedLang) {
-        applyLanguage(savedLang);
-    }
+        function printTicket() {
+            window.print();
+        }
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    }
-    if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.remove('dark-mode');
-    }
+        window.onload = function() {
+            loadTicketData();
+        };
     </script>
 </body>
 </html>

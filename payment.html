@@ -2,375 +2,764 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Route & Payment Checkout</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Route & Payment Checkout - Ethio Travel System</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --success-color: #2ecc71;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border-color: #dcdde1;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Modern Toast Notification Container */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #ffffff;
+            color: #2c3e50;
+            padding: 16px 22px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 300px;
+            border-left: 5px solid #3498db;
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        }
+
+        .toast.success {
+            border-left-color: #2ecc71;
+            background: #e8f8f5;
+            color: #0e6655;
+        }
+
+        .toast.error {
+            border-left-color: #e74c3c;
+            background: #f5b7b133;
+            color: #c0392b;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+            z-index: 10;
+        }
+
+        .sidebar-brand {
+            padding: 0 20px 20px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .lang-switch-container {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .lang-switch-container label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: bold;
+        }
+
+        .lang-switch-container select {
+            width: 100%;
+            padding: 9px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-weight: bold;
+            background: #fff;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+            flex: 1;
+        }
+
+        .sidebar-nav li a {
+            padding: 14px 20px;
+            text-decoration: none;
+            color: #555;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .sidebar-nav li a:hover, .sidebar-nav li a.active {
+            background: var(--primary-color);
+            color: white;
+            border-left: 4px solid var(--primary-dark);
+        }
+
+        /* Main Content Container */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .header-title {
+            margin-top: 0;
+            color: var(--text-main);
+            font-size: 24px;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        /* Card Panels */
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+            font-size: 17px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Form Layout Grids */
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        .form-group select, .form-group input {
+            padding: 11px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background: #fff;
+            color: var(--text-main);
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .form-group select:focus, .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+        }
+
+        /* Fare & Info Banner */
+        .info-badge {
+            background: #e8f8f5;
+            border: 1px solid #a3e4d7;
+            padding: 14px 18px;
+            border-radius: 6px;
+            color: #0e6655;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        /* Seat Selector Matrix */
+        .seat-container {
+            display: grid;
+            grid-template-columns: repeat(6, 45px);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .seat {
+            width: 45px;
+            height: 45px;
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .seat:hover {
+            background: #d5dbdb;
+        }
+
+        .seat.selected {
+            background: var(--success-color);
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .seat.booked {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Action Buttons */
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.99);
+        }
+
+        @media (max-width: 900px) {
+            .form-grid-3, .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+        }
+    </style>
 </head>
-<body class="dark-mode">
-    <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+<body>
 
-    <div class="dashboard-container">
-        <aside class="sidebar">
-            <h3 id="navTitle">Navigation</h3>
-            <ul>
-                <li><a href="dashboard.html" id="navOverview">Overview</a></li>
-                <li><a href="payment.html" class="active" id="navRoute">Route & Payment</a></li>
-                <li><a href="bookings.html">My Bookings</a></li>
-                <li><a href="admin.html">Admin Panel</a></li>
-                <li><a href="logout.html" id="navLogout">Logout</a></li>
-            </ul>
-        </aside>
-        <main class="main-content">
-            <h1 id="pageTitle">Intercity Bus Booking & Secure Checkout</h1>
-            
-            <form id="bookingForm" class="auth-box hero-bg" style="max-width: 100%; margin: 20px 0; text-align: left;">
-                <h3 id="section1Title">1. Select Route & Travel Date (30+ Cities)</h3>
-                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
-                    <div style="flex: 1; min-width: 200px;">
-                        <label id="labelFrom">From City:</label>
-                        <select name="origin" id="originSelect" required>
-                            <option value="" id="optOriginDefault">Select Origin City</option>
-                        </select>
-                    </div>
-                    <div style="flex: 1; min-width: 200px;">
-                        <label id="labelTo">To City:</label>
-                        <select name="destination" id="destSelect" required>
-                            <option value="" id="optDestDefault">Select Destination City</option>
-                        </select>
-                    </div>
-                    <div style="flex: 1; min-width: 200px;">
-                        <label id="labelDate">Travel Date:</label>
-                        <input type="date" name="date" id="dateInput" required>
-                    </div>
-                </div>
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
 
-                <h3 id="section2Title">2. Choose Bus Operator, Seat & Fare</h3>
-                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
-                    <div style="flex: 2; min-width: 250px;">
-                        <label id="labelBus">Available Bus Fleet:</label>
-                        <select name="bus" id="busSelect" required>
-                            <option value="" id="optBusDefault">Select Bus Operator</option>
-                            <option value="Haile Luxury Coach">Haile Bus (Luxury Coach)</option>
-                            <option value="Abay Intercity">Abay Bus</option>
-                            <option value="Odaa Express">Odaa Bus</option>
-                            <option value="Public Transport">Public Bus Service</option>
-                            <option value="FM Express">FM Bus</option>
-                            <option value="Ethio Bus">Ethio Bus</option>
-                            <option value="Walya Transport">Walya Bus</option>
-                        </select>
-                    </div>
-                    <div style="flex: 1; min-width: 150px;">
-                        <label id="labelFare">Fare Calculation:</label>
-                        <div id="fareDisplay" style="padding: 12px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; color: #2ecc71; font-weight: bold;">
-                            ⚡ Auto-calculated by Distance (KM)
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seat Selection UI Integration -->
-                <div style="margin-bottom: 20px; background: var(--bg-color); padding: 15px; border-radius: 6px; border: 1px solid var(--border-color);">
-                    <label style="font-weight: bold; display: block; margin-bottom: 10px;" id="labelSeat">Select Bus Seat (1 - 12):</label>
-                    <div id="seatGrid" style="display: grid; grid-template-columns: repeat(6, 40px); gap: 10px;">
-                        <!-- Generated via JS -->
-                    </div>
-                    <input type="hidden" id="selectedSeat" required>
-                </div>
-
-                <h3 id="section3Title">3. Mobile Payment & Transaction ID</h3>
-                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
-                    <div style="flex: 1; min-width: 200px;">
-                        <label id="labelProvider">Payment Provider:</label>
-                        <select name="provider" id="providerSelect" required>
-                            <option value="Telebirr">Telebirr</option>
-                            <option value="CBE Birr">CBE Birr</option>
-                            <option value="CBE">Commercial Bank of Ethiopia (CBE)</option>
-                            <option value="Awash Bank">Awash Bank</option>
-                            <option value="Coop Bank">Cooperative Bank of Oromia</option>
-                            <option value="Amhara Bank">Amhara Bank</option>
-                        </select>
-                    </div>
-                    <div style="flex: 1; min-width: 200px;">
-                        <label id="labelAccountInput">Phone / Account Number:</label>
-                        <input type="text" name="phone" id="accountInput" placeholder="09xxxxxxxx" required>
-                    </div>
-                    <div style="flex: 1; min-width: 200px;">
-                        <label id="labelTxn">Transaction Number (TXN ID):</label>
-                        <input type="text" name="txn_id" placeholder="e.g., TXN12345678" required>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-secondary" id="payButton">Confirm Booking & Pay</button>
-            </form>
-        </main>
+    <!-- SIDEBAR NAVIGATION & MULTI-LINGUAL SELECTOR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            Ethio Travel System
+        </div>
+        <div class="lang-switch-container">
+            <label for="langSelect" id="lblLanguageHeader">Language / ቋንቋ</label>
+            <select id="langSelect" onchange="switchLanguage()">
+                <option value="en">English</option>
+                <option value="am" selected>አማርኛ (Amharic)</option>
+            </select>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="dashboard.html" id="navDashboard">📊 ዳሽቦርድ / Dashboard</a></li>
+            <li><a href="my_bookings.html" id="navMyBookings">🎫 የኔ ጉዞዎች / My Bookings</a></li>
+            <li><a href="payment.html" class="active" id="navPayment">💳 ክፍያ እና ጉዞ / Route & Payment</a></li>
+            <li><a href="admin.html" id="navAdmin">⚙️ የአስተዳዳሪ ፓነል / Admin Panel</a></li>
+        </ul>
     </div>
 
-   <script>
-    const ethiopianCities = [
-        "Addis Ababa", "Bahir Dar", "Gondar", "Hawassa", "Mekelle", "Dire Dawa",
-        "Adama (Nazret)", "Jimma", "Dessie", "Bishoftu (Debre Zeyit)", "Jijiga",
-        "Shashemene", "Arba Minch", "Hosaena", "Harar", "Dilla", "Nekemte",
-        "Debre Markos", "Sodo", "Weldiya", "Debre Tabor", "Kombolcha", "Assosa",
-        "Gambela", "Semera", "Butajira", "Goba", "Ambo", "Ziway (Batu)", 
-        "Axum", "Lalibela", "Bale Robe", "Metu", "Finote Selam", "Wolkite"
-    ].sort();
+    <!-- MAIN CHECKOUT WORKSPACE -->
+    <div class="main-content">
+        <h2 id="pageMainTitle">ትኬት ገዥ ከተማን ድንጋጌ እና ክፍያ (Route & Payment Checkout)</h2>
 
-    const originSelect = document.getElementById('originSelect');
-    const destSelect = document.getElementById('destSelect');
+        <form id="checkoutForm" onsubmit="processBooking(event)">
+            
+            <!-- SECTION 1: ROUTE & DATE SELECTION -->
+            <div class="card">
+                <h3 id="sec1Heading">1. መነሻ፣ መድረሻና ዕለት ጉዞ ይምረጡ</h3>
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label id="lblOriginCity">መነሻ ከተማ (Origin City):</label>
+                        <select id="originCity" required onchange="calculateFare()">
+                            <!-- Dynamically populated -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblDestinationCity">መድረሻ ከተማ (Destination City):</label>
+                        <select id="destinationCity" required onchange="calculateFare()">
+                            <!-- Dynamically populated -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblTravelDate">ዕለት ጉዞ (Travel Date):</label>
+                        <input type="date" id="travelDate" required>
+                    </div>
+                </div>
 
-    ethiopianCities.forEach(city => {
-        originSelect.innerHTML += `<option value="${city}">${city}</option>`;
-        destSelect.innerHTML += `<option value="${city}">${city}</option>`;
-    });
+                <div class="info-badge">
+                    <span id="fareDisplayLabel">💰 የሚገመተው ክፍያ (Estimated Fare):</span>
+                    <strong id="fareAmountValue">450.00 ETB (~310 km)</strong>
+                </div>
+            </div>
 
-    const busSelect = document.getElementById('busSelect');
-    const fareDisplay = document.getElementById('fareDisplay');
+            <!-- SECTION 2: BUS OPERATOR & SEAT SELECTION -->
+            <div class="card">
+                <h3 id="sec2Heading">2. የአገልግሎት ሰጪ ድርጅት እና ወንበር ምርጫ</h3>
+                <div class="form-grid-2" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label id="lblBusOperator">አውቶቡስ ድርጅት (Bus Operator):</label>
+                        <select id="busOperator">
+                            <option value="Haile Bus">Haile Bus (ሃይሌ አውቶቡስ)</option>
+                            <option value="Abay Bus">Abay Bus (አባይ አውቶቡስ)</option>
+                            <option value="Public Express">Public Express (ህዝብ ኤክስፕረስ)</option>
+                            <option value="Selam Bus">Selam Bus (ሰላም አውቶቡስ)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblSeatNumber">የተመረጠ ወንበር ቁጥር (Selected Seat):</label>
+                        <input type="text" id="selectedSeatInput" value="Seat 04" readonly style="background-color: #f8f9f9; font-weight: bold;">
+                    </div>
+                </div>
 
-    function updateFarePreview() {
-        const origin = originSelect.value;
-        const destination = destSelect.value;
-        const bus = busSelect.value;
+                <label style="font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; display: block;" id="lblSeatMatrix">ወንበር ይምረጡ (Click to Select Seat):</label>
+                <div class="seat-container" id="seatMatrixGrid">
+                    <!-- Dynamic seats generated via JS -->
+                </div>
+            </div>
 
-        if (!origin || !destination || origin === destination) {
-            const currentLang = localStorage.getItem('preferred_lang');
-            if (currentLang === 'am') {
-                fareDisplay.innerHTML = "⚡ እባክዎ የተለየ መነሻ እና መድረሻ ይምረጡ";
-            } else if (currentLang === 'om') {
-                fareDisplay.innerHTML = "⚡ Kaumsaa fi Gahuu adda addaa filadhaa";
-            } else if (currentLang === 'ti') {
-                fareDisplay.innerHTML = "⚡ እባክዎ ዝተፈላለየ መበገስን መእተውን ምረጡ";
-            } else if (currentLang === 'so') {
-                fareDisplay.innerHTML = "⚡ Dooro meelaha kala duwan ee ka bixitaanka & tagitaanka";
-            } else {
-                fareDisplay.innerHTML = "⚡ Select different origin & destination";
-            }
-            return;
-        }
+            <!-- SECTION 3: DIGITAL PAYMENT MODULE (TELEBIRR / CBE / CHAPA) -->
+            <div class="card">
+                <h3 id="sec3Heading">3. ማረጋገጫ እና የክፍያ ዘዴ (Payment Gateway)</h3>
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label id="lblPaymentMethod">ክፍያ ዘዴ (Payment Gateway):</label>
+                        <select id="paymentMethod" onchange="updatePaymentPlaceholders()">
+                            <option value="telebirr">ቴሌብር (Telebirr)</option>
+                            <option value="cbe">የኢትዮጵያ ንግድ ባንክ - CBE (Bank Account)</option>
+                            <option value="chapa">ቻፓ ዲጂታል (Chapa)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblAccountNumber">ስልክ ቁጥር / የባንክ አካውንት (Phone / Bank Account):</label>
+                        <input type="text" id="accountNumberInput" placeholder="09xxxxxxxx" required>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblTxnId">ትራንዛክሽን ኮድ (TXN ID):</label>
+                        <input type="text" id="txnId" placeholder="e.g., TXN98492026" required>
+                    </div>
+                </div>
 
-        let km = Math.abs(origin.length - destination.length) * 45 + 280;
-        if(origin === "Addis Ababa" || destination === "Addis Ababa") km = 450;
+                <button type="submit" class="btn-submit" id="btnCompleteBooking">🎫 ጉዞውን ያረጋግጡ እና ቲኬት ያውጡ (Complete Booking & Generate Ticket)</button>
+            </div>
 
-        let rate = 3.5;
-        if (bus.includes('Luxury') || bus.includes('Abay')) rate = 5.0;
-        else if (bus.includes('Express')) rate = 4.2;
+        </form>
+    </div>
+    
 
-        const total = (km * rate).toFixed(2);
-        fareDisplay.dataset.fareValue = `${total} ETB (~${km} km)`;
-        fareDisplay.innerHTML = `💰 Estimated: ${total} ETB (~${km} km)`;
-    }
-
-    originSelect.addEventListener('change', updateFarePreview);
-    destSelect.addEventListener('change', updateFarePreview);
-    busSelect.addEventListener('change', updateFarePreview);
-
-    // Interactive Seat Selection Generation
-    const seatGrid = document.getElementById('seatGrid');
-    const selectedSeatInput = document.getElementById('selectedSeat');
-
-    for(let i = 1; i <= 12; i++) {
-        const seat = document.createElement('div');
-        seat.innerText = i;
-        seat.style.cssText = "width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #34495e; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;";
-        
-        // Randomly simulate occupied seats (e.g. seats 3 and 7)
-        if(i === 3 || i === 7) {
-            seat.style.background = '#7f8c8d';
-            seat.style.cursor = 'not-allowed';
-        } else {
-            seat.onclick = function() {
-                document.querySelectorAll('#seatGrid div').forEach(s => {
-                    if(s.style.background !== 'rgb(127, 140, 141)') s.style.background = '#34495e';
-                });
-                seat.style.background = '#2ecc71';
-                selectedSeatInput.value = i;
-            };
-        }
-        seatGrid.appendChild(seat);
-    }
-
-    // Dynamic Account Label Switching based on Provider Selection
-    const providerSelect = document.getElementById('providerSelect');
-    const accountInput = document.getElementById('accountInput');
-    const labelAccountInput = document.getElementById('labelAccountInput');
-
-    function updateAccountLabel() {
-        const selectedProvider = providerSelect.value;
-        const currentLang = localStorage.getItem('preferred_lang') || 'en';
-        const isBank = (selectedProvider !== 'Telebirr' && selectedProvider !== 'CBE Birr');
-
-        if (currentLang === 'am') {
-            labelAccountInput.innerText = isBank ? 'የባንክ ሂሳብ ቁጥር:' : 'ስልክ / የኪስ ቦርሳ ቁጥር:';
-            accountInput.placeholder = isBank ? 'እባክዎ ትክክለኛ የባንክ ሂሳብ ቁጥር ያስገቡ' : '09xxxxxxxx';
-        } else if (currentLang === 'om') {
-            labelAccountInput.innerText = isBank ? 'Lakkoofsa Herrega Baankii:' : 'Lakkoofsa Bilbilaa / Wallet:';
-            accountInput.placeholder = isBank ? 'Lakkoofsa herrega baankii galchaa' : '09xxxxxxxx';
-        } else if (currentLang === 'ti') {
-            labelAccountInput.innerText = isBank ? 'ቁጽሪ ሕሳብ ባንክ:' : 'ቁጽሪ ስልኪ / ኪስ ቦርሳ:';
-            accountInput.placeholder = isBank ? 'ቁጽሪ ሕሳብ ባንክ ኣእቱ' : '09xxxxxxxx';
-        } else if (currentLang === 'so') {
-            labelAccountInput.innerText = isBank ? 'Lambarka Akoonka Bankiga:' : 'Lambarka Telefoonka / Wallet:';
-            accountInput.placeholder = isBank ? 'Geli lambarka akoonka bankiga' : '09xxxxxxxx';
-        } else {
-            labelAccountInput.innerText = isBank ? 'Bank Account Number:' : 'Phone / Wallet Number:';
-            accountInput.placeholder = isBank ? 'Enter bank account number' : '09xxxxxxxx';
-        }
-    }
-
-    providerSelect.addEventListener('change', updateAccountLabel);
-    window.addEventListener('DOMContentLoaded', updateAccountLabel);
-
-    document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if(!selectedSeatInput.value) {
-            alert('Please select an available seat from the seat grid!');
-            return;
-        }
-
-        const selectedProvider = providerSelect.value;
-        const accountValue = accountInput.value.trim();
-        const isBank = (selectedProvider !== 'Telebirr' && selectedProvider !== 'CBE Birr');
-
-        if (isBank) {
-            const bankRegex = /^\d{10,16}$/;
-            if (!bankRegex.test(accountValue) || accountValue.startsWith('09') || accountValue.startsWith('07')) {
-                alert('Invalid Bank Account! Traditional bank accounts cannot be mobile numbers starting with 09 or 07. Please enter a valid bank account number.');
-                accountInput.focus();
-                return;
-            }
-        } else {
-            const phoneRegex = /^(09|07)\d{8}$/;
-            if (!phoneRegex.test(accountValue)) {
-                alert('Please enter a valid mobile number starting with 09 or 07 (10 digits total).');
-                accountInput.focus();
-                return;
-            }
-        }
-        
-        const bookingData = {
-            ticketNo: 'ET-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
-            origin: originSelect.value,
-            destination: destSelect.value,
-            date: document.getElementById('dateInput').value,
-            bus: busSelect.value,
-            seat: selectedSeatInput.value,
-            fare: fareDisplay.dataset.fareValue || '3107.50 ETB (~565 km)',
-            provider: providerSelect.value,
-            account: accountInput.value,
-            status: 'PAID & CONFIRMED',
-            timestamp: new Date().toISOString()
+    <script>
+        const citiesData = {
+            en: [
+                "Addis Ababa", "Adama (Nazret)", "Adwa", "Ambo", "Arba Minch", "Asela", "Assosa", "Awasa (Hawassa)", 
+                "Axum", "Bahir Dar", "Bale Robe", "Bishoftu (Debre Zeyit)", "Butajira", "Dambi Dollo", "Debre Berhan", 
+                "Debre Markos", "Debre Tabor", "Dessie", "Dilla", "Dire Dawa", "Finote Selam", "Gambela", 
+                "Goba", "Gode", "Gondar", "Gore", "Hagere Mariam", "Harar", "Hosaena", "Jijiga", "Jima (Jimma)", 
+                "Kebri Dahar", "Kombolcha", "Maikadra", "Maji", "Mekelle", "Metu", "Mieso", "Mojo", "Mota", 
+                "Negele Arsi", "Negele Borana", "Nekemte", "Sawla", "Shashamane", "Woldia", "Wolaita Sodo", "Worabe"
+            ],
+            am: [
+                "አዲስ አበባ", "አዳማ (ናዝሬት)", "አድዋ", "አምቦ", "አርባ ምንጭ", "አሰላ", "አሶሳ", "አዋሳ (ሀዋሳ)", 
+                "አክሱም", "ባህር ዳር", "ባሌ ሮቤ", "ቢሾፍቱ (ደብረ ዘይት)", "ቡታጅራ", "ደምቢዶሎ", "ደብረ ብርሃን", 
+                "ደብረ ማርቆስ", "ደብረ ታቦር", "ደሴ", "ዲላ", "ድሬ ዳዋ", "ፍኖተ ሰላም", "ጋምቤላ", 
+                "ጎባ", "ጎዴ", "ጎንደር", "ጎሬ", "ሀገረ ማርያም", "ሐረር", "ሆሳዕና", "ጅጅጋ", "ጅማ", 
+                "ቀብሪ ደሀር", "ኮምቦልቻ", "ማይካድራ", "ማጂ", "መቀሌ", "ሜቱ", "ሚኤሶ", "ሞጆ", "ሞጣ", 
+                "ነጌሌ አርሲ", "ነጌሌ ቦረና", "ነቀምት", "ሳውላ", "ሻሸመኔ", "ወልዲያ", "ወላይታ ሶዶ", "ወራቤ"
+            ]
         };
 
-        // Multi-booking storage array integration
-        let allBookings = JSON.parse(localStorage.getItem('user_bookings')) || [];
-        allBookings.unshift(bookingData);
-        localStorage.setItem('user_bookings', JSON.stringify(allBookings));
-        localStorage.setItem('user_booking', JSON.stringify(bookingData));
+        const distanceMatrix = {
+            "Addis Ababa": {
+                "Adama (Nazret)": 95, "Addis Ababa": 0, "Adwa": 1006, "Ambo": 115, "Arba Minch": 505, "Asela": 165,
+                "Assosa": 670, "Awasa (Hawassa)": 275, "Axum": 1024, "Bahir Dar": 565, "Bale Robe": 430, 
+                "Bishoftu (Debre Zeyit)": 45, "Butajira": 130, "Dambi Dollo": 660, "Debre Berhan": 130, 
+                "Debre Markos": 300, "Debre Tabor": 665, "Dessie": 400, "Dilla": 365, "Dire Dawa": 505, 
+                "Finote Selam": 380, "Gambela": 767, "Goba": 455, "Gode": 1150, "Gondar": 738, "Gore": 595,
+                "Harar": 525, "Hosaena": 230, "Jijiga": 625, "Jima (Jimma)": 345, "Kombolcha": 375, 
+                "Mekelle": 780, "Nekemte": 331, "Shashamane": 250, "Woldia": 521, "Wolaita Sodo": 330
+            },
+            "Bahir Dar": {
+                "Adama (Nazret)": 655, "Addis Ababa": 565, "Ambo": 510, "Arba Minch": 1070, "Assosa": 475, 
+                "Awasa (Hawassa)": 840, "Axum": 580, "Bahir Dar": 0, "Bale Robe": 995, "Bishoftu (Debre Zeyit)": 610, 
+                "Butajira": 695, "Debre Markos": 265, "Debre Tabor": 100, "Dessie": 475, "Dilla": 930, 
+                "Dire Dawa": 860, "Finote Selam": 170, "Gambela": 830, "Goba": 1020, "Gondar": 175, 
+                "Jima (Jimma)": 780, "Mekelle": 725, "Nekemte": 610, "Woldia": 375, "Wolaita Sodo": 895
+            },
+            "Gondar": {
+                "Adama (Nazret)": 830, "Addis Ababa": 738, "Ambo": 685, "Arba Minch": 1245, "Assosa": 650, 
+                "Awasa (Hawassa)": 1015, "Axum": 405, "Bahir Dar": 175, "Bale Robe": 1170, "Bishoftu (Debre Zeyit)": 783, 
+                "Butajira": 868, "Debre Markos": 440, "Debre Tabor": 275, "Dessie": 650, "Dilla": 1105, 
+                "Dire Dawa": 1035, "Finote Selam": 345, "Gambela": 1005, "Goba": 1195, "Gondar": 0, 
+                "Mekelle": 550, "Woldia": 550
+            },
+            "Adama (Nazret)": {
+                "Adama (Nazret)": 0, "Addis Ababa": 95, "Ambo": 210, "Arba Minch": 490, "Asela": 75,
+                "Assosa": 765, "Awasa (Hawassa)": 270, "Axum": 1115, "Bahir Dar": 655, "Bale Robe": 345, 
+                "Bishoftu (Debre Zeyit)": 55, "Butajira": 115, "Debre Markos": 395, "Debre Tabor": 760, 
+                "Dessie": 385, "Dilla": 350, "Dire Dawa": 415, "Finote Selam": 475, "Gambela": 860, 
+                "Goba": 370, "Gondar": 830, "Harar": 430, "Jijiga": 530, "Jima (Jimma)": 390, 
+                "Mekelle": 875, "Shashamane": 215
+            },
+            "Dire Dawa": {
+                "Adama (Nazret)": 415, "Addis Ababa": 505, "Ambo": 620, "Arba Minch": 870, "Assosa": 1170, 
+                "Awasa (Hawassa)": 775, "Axum": 1420, "Bahir Dar": 860, "Bale Robe": 750, "Bishoftu (Debre Zeyit)": 460, 
+                "Butajira": 570, "Debre Markos": 805, "Debre Tabor": 965, "Dessie": 540, "Dilla": 730, 
+                "Dire Dawa": 0, "Finote Selam": 885, "Gambela": 1265, "Goba": 775, "Gondar": 1035, 
+                "Harar": 110, "Jijiga": 108, "Kombolcha": 530, "Mekelle": 1150
+            },
+            "Mekelle": {
+                "Addis Ababa": 780, "Adama (Nazret)": 875, "Adwa": 230, "Axum": 250, "Bahir Dar": 725, 
+                "Dessie": 405, "Dire Dawa": 1150, "Gondar": 550, "Mekelle": 0, "Woldia": 270
+            },
+            "Awasa (Hawassa)": {
+                "Addis Ababa": 275, "Adama (Nazret)": 270, "Arba Minch": 230, "Awasa (Hawassa)": 0, 
+                "Bale Robe": 260, "Dilla": 90, "Hosaena": 115, "Shashamane": 25, "Wolaita Sodo": 85
+            }
+        };
 
-        alert('Payment successful and booking confirmed!');
-        window.location.href = 'dashboard.html';
-    });
+        const uiStrings = {
+            en: {
+                pageMainTitle: "Route Selection & Payment Checkout",
+                sec1Heading: "1. Select Origin, Destination & Travel Date",
+                lblOriginCity: "Origin City:",
+                lblDestinationCity: "Destination City:",
+                lblTravelDate: "Travel Date:",
+                fareDisplayLabel: "Estimated Fare & Distance:",
+                sec2Heading: "2. Bus Operator & Seat Selection",
+                lblBusOperator: "Bus Operator:",
+                lblSeatNumber: "Selected Seat:",
+                lblSeatMatrix: "Interactive Seat Selection Map:",
+                sec3Heading: "3. Payment Gateway & Verification",
+                lblPaymentMethod: "Payment Gateway:",
+                lblAccountNumber: "Phone Number / Bank Account:",
+                lblTxnId: "Transaction Reference (TXN ID):",
+                btnCompleteBooking: "Complete Booking & Generate Ticket",
+                navDashboard: "Dashboard",
+                navMyBookings: "My Bookings",
+                navPayment: "Route & Payment",
+                navAdmin: "Admin Panel"
+            },
+            am: {
+                pageMainTitle: "የጉዞ መስመር እና የክፍያ ማረጋገጫ (Route & Payment Checkout)",
+                sec1Heading: "1. መነሻ፣ መድረሻና ዕለት ጉዞ ይምረጡ",
+                lblOriginCity: "መነሻ ከተማ (Origin City):",
+                lblDestinationCity: "መድረሻ ከተማ (Destination City):",
+                lblTravelDate: "ዕለት ጉዞ (Travel Date):",
+                fareDisplayLabel: "የሚገመተው ክፍያ እና ርቀት:",
+                sec2Heading: "2. የአገልግሎት ሰጪ ድርጅት እና ወንበር ምርጫ",
+                lblBusOperator: "አውቶቡስ ድርጅት (Bus Operator):",
+                lblSeatNumber: "የተመረጠ ወንበር ቁጥር:",
+                lblSeatMatrix: "ወንበር ይምረጡ (Interactive Seat Map):",
+                sec3Heading: "3. ማረጋገጫ እና የክፍያ ዘዴ (Payment Gateway)",
+                lblPaymentMethod: "ክፍያ ዘዴ (Payment Gateway):",
+                lblAccountNumber: "ስልክ ቁጥር / የባንክ አካውንት:",
+                lblTxnId: "ትራንዛክሽን ኮድ (TXN ID):",
+                btnCompleteBooking: "🎫 ጉዞውን ያረጋግጡ እና ቲኬት ያውጡ (Complete Booking & Generate Ticket)",
+                navDashboard: "📊 ዳሽቦርድ / Dashboard",
+                navMyBookings: "🎫 የኔ ጉዞዎች / My Bookings",
+                navPayment: "💳 ክፍያ እና ጉዞ / Route & Payment",
+                navAdmin: "⚙️ የአስተዳዳሪ ፓነል / Admin Panel"
+            }
+        };
 
-    // Multi-Language Support Script
-    function applyLanguage(lang) {
-        if (lang === 'am') {
-            document.getElementById('navTitle').innerText = 'ማውጫ';
-            document.getElementById('navOverview').innerText = 'አጠቃላይ እይታ';
-            document.getElementById('navRoute').innerText = 'መስመር እና ክፍያ';
-            document.getElementById('navLogout').innerText = 'ውጣ';
-            document.getElementById('pageTitle').innerText = 'የከተማ አቋራጭ አውቶቡስ ትኬት እና ደህንነቱ የተጠበቀ ክፍያ';
-            document.getElementById('section1Title').innerText = '1. መነሻ፣ መድረሻ እና የጉዞ ቀን ይምረጡ';
-            document.getElementById('labelFrom').innerText = 'የመነሻ ከተማ:';
-            document.getElementById('labelTo').innerText = 'የመድረሻ ከተማ:';
-            document.getElementById('labelDate').innerText = 'የጉዞ ቀን:';
-            document.getElementById('section2Title').innerText = '2. አውቶቡስ፣ መቀመጫ እና ታሪፍ ይምረጡ';
-            document.getElementById('labelBus').innerText = 'የሚገኙ አውቶቡሶች:';
-            document.getElementById('labelFare').innerText = 'የታሪፍ ስሌት:';
-            document.getElementById('labelSeat').innerText = 'የመቀመጫ ቁጥር ይምረጡ (1 - 12):';
-            document.getElementById('section3Title').innerText = '3. የክፍያ አማራጭ እና የግብይት መለያ (TXN ID)';
-            document.getElementById('labelProvider').innerText = 'የክፍያ አገልግሎት ሰጪ:';
-            document.getElementById('labelTxn').innerText = 'የግብይት ቁጥር (TXN ID):';
-            document.getElementById('payButton').innerText = 'ትኬት ይቁረጡ & ይክፈሉ';
-            document.getElementById('optOriginDefault').innerText = 'የመነሻ ከተማ ይምረጡ';
-            document.getElementById('optDestDefault').innerText = 'የመድረሻ ከተማ ይምረጡ';
-            document.getElementById('optBusDefault').innerText = 'የአውቶቡስ ድርጅት ይምረጡ';
-        } else if (lang === 'om') {
-            document.getElementById('navTitle').innerText = 'Kallattii';
-            document.getElementById('navOverview').innerText = 'Gabaasa Waliigalaa';
-            document.getElementById('navRoute').innerText = 'Karaa & Kaffaltii';
-            document.getElementById('navLogout').innerText = 'Ba\'i';
-            document.getElementById('pageTitle').innerText = 'Qabiyyee Imala Magaalota Gidduu & Kaffaltii';
-            document.getElementById('section1Title').innerText = '1. Magaalaa Kaumsaa & Guyyaa Imala Filadhu';
-            document.getElementById('labelFrom').innerText = 'Magaalaa Kaumsaa:';
-            document.getElementById('labelTo').innerText = 'Magaalaa Gahuu:';
-            document.getElementById('labelDate').innerText = 'Guyyaa Imala:';
-            document.getElementById('section2Title').innerText = '2. Konkolaachisaa Bus, Teessoo & Kaffaltii Filadhu';
-            document.getElementById('labelBus').innerText = 'Konkolaattota Jiran:';
-            document.getElementById('labelFare').innerText = 'Herrega Kaffaltii:';
-            document.getElementById('labelSeat').innerText = 'Teessoo Filadhu (1 - 12):';
-            document.getElementById('section3Title').innerText = '3. Filannoo Kaffaltii & Lakkoofsa Dabarsaa';
-            document.getElementById('labelProvider').innerText = 'Dhaabbata Kaffaltii:';
-            document.getElementById('labelTxn').innerText = 'Lakkoofsa Dabarsaa (TXN ID):';
-            document.getElementById('payButton').innerText = 'Kaffalii & Mirkaneessi';
-            document.getElementById('optOriginDefault').innerText = 'Magaalaa Kaumsaa Filadhu';
-            document.getElementById('optDestDefault').innerText = 'Magaalaa Gahuu Filadhu';
-            document.getElementById('optBusDefault').innerText = 'Konkolaachisaa Bus Filadhu';
-        } else if (lang === 'ti') {
-            document.getElementById('navTitle').innerText = 'መተሓሳሰቢ';
-            document.getElementById('navOverview').innerText = 'ጠቓላ ርእየት';
-            document.getElementById('navRoute').innerText = 'መስመርን ክፍያን';
-            document.getElementById('navLogout').innerText = 'ውጻእ';
-            document.getElementById('pageTitle').innerText = 'ትኬት ጉዕዞ ከተማን ድሕንነት ዘለዎ ክፍያን';
-            document.getElementById('section1Title').innerText = '1. መበገሲ፣ መእተውን ዕለተ ጉዕዞን ምረጡ';
-            document.getElementById('labelFrom').innerText = 'መበገሲ ከተማ:';
-            document.getElementById('labelTo').innerText = 'መእተዊ ከተማ:';
-            document.getElementById('labelDate').innerText = 'ዕለተ ጉዕዞ:';
-            document.getElementById('section2Title').innerText = '2. ኣውቶቡስ፣ መንበርን ክፍያን ምረጡ';
-            document.getElementById('labelBus').innerText = 'ዝርከቡ ኣውቶቡሳት:';
-            document.getElementById('labelFare').innerText = 'ቅጥዕና ክፍያ:';
-            document.getElementById('labelSeat').innerText = 'ቁጽሪ መንበር ምረጡ (1 - 12):';
-            document.getElementById('section3Title').innerText = '3. መማረጺ ክፍያን ቁጽሪ ትራንዛክሽንን';
-            document.getElementById('labelProvider').innerText = 'መራኸቢ ክፍያ:';
-            document.getElementById('labelTxn').innerText = 'ቁጽሪ ትራንዛክሽን (TXN ID):';
-            document.getElementById('payButton').innerText = 'ጉዕዞ ኣረጋግጽ & ክፈል';
-            document.getElementById('optOriginDefault').innerText = 'መበገሲ ከተማ ምረጡ';
-            document.getElementById('optDestDefault').innerText = 'መእተዊ ከተማ ምረጡ';
-            document.getElementById('optBusDefault').innerText = 'ኣውቶቡስ ኣገልግሎት ምረጡ';
-        } else if (lang === 'so') {
-            document.getElementById('navTitle').innerText = 'Hagaha';
-            document.getElementById('navOverview').innerText = 'Guud mar';
-            document.getElementById('navRoute').innerText = 'Waddada & Lacag Bixinta';
-            document.getElementById('navLogout').innerText = 'Ka Bax';
-            document.getElementById('pageTitle').innerText = 'Ballamaha Basaska & Lacag Bixinta Ammaan ah';
-            document.getElementById('section1Title').innerText = '1. Dooro Waddada & Taariikhda Safarka';
-            document.getElementById('labelFrom').innerText = 'Magaalada Ka Bixitaanka:';
-            document.getElementById('labelTo').innerText = 'Magaalada Tagitaanka:';
-            document.getElementById('labelDate').innerText = 'Taariikhda Safarka:';
-            document.getElementById('section2Title').innerText = '2. Dooro Shirkadda Baska, Kursiga & Qiimaha';
-            document.getElementById('labelBus').innerText = 'Basaska Diyaarka Ah:';
-            document.getElementById('labelFare').innerText = 'Xisaabinta Lacagta:';
-            document.getElementById('labelSeat').innerText = 'Dooro Kursiga (1 - 12):';
-            document.getElementById('section3Title').innerText = '3. Habka Bixinta & Lambarka Macaamilka';
-            document.getElementById('labelProvider').innerText = 'Shirkadda Lacag Bixinta:';
-            document.getElementById('labelTxn').innerText = 'Lambarka Macaamilka (TXN ID):';
-            document.getElementById('payButton').innerText = 'Xaqiiji Ballamaha & Bixi';
-            document.getElementById('optOriginDefault').innerText = 'Dooro Magaalada Ka Bixitaanka';
-            document.getElementById('optDestDefault').innerText = 'Dooro Magaalada Tagitaanka';
-            document.getElementById('optBusDefault').innerText = 'Dooro Shirkadda Baska';
+        let currentSelectedSeat = "Seat 04";
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = type === 'success' ? '🎉' : '⚠️';
+            toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
         }
-        updateAccountLabel();
-    }
 
-    const savedLang = localStorage.getItem('preferred_lang');
-    if (savedLang) {
-        applyLanguage(savedLang);
-    }
+        function switchLanguage() {
+            const lang = document.getElementById('langSelect').value;
+            localStorage.setItem('ets_lang', lang);
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    }
-    if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.remove('dark-mode');
-    }
+            document.getElementById('pageMainTitle').textContent = uiStrings[lang].pageMainTitle;
+            document.getElementById('sec1Heading').textContent = uiStrings[lang].sec1Heading;
+            document.getElementById('lblOriginCity').textContent = uiStrings[lang].lblOriginCity;
+            document.getElementById('lblDestinationCity').textContent = uiStrings[lang].lblDestinationCity;
+            document.getElementById('lblTravelDate').textContent = uiStrings[lang].lblTravelDate;
+            document.getElementById('fareDisplayLabel').textContent = uiStrings[lang].fareDisplayLabel;
+            document.getElementById('sec2Heading').textContent = uiStrings[lang].sec2Heading;
+            document.getElementById('lblBusOperator').textContent = uiStrings[lang].lblBusOperator;
+            document.getElementById('lblSeatNumber').textContent = uiStrings[lang].lblSeatNumber;
+            document.getElementById('lblSeatMatrix').textContent = uiStrings[lang].lblSeatMatrix;
+            document.getElementById('sec3Heading').textContent = uiStrings[lang].sec3Heading;
+            document.getElementById('lblPaymentMethod').textContent = uiStrings[lang].lblPaymentMethod;
+            document.getElementById('lblAccountNumber').textContent = uiStrings[lang].lblAccountNumber;
+            document.getElementById('lblTxnId').textContent = uiStrings[lang].lblTxnId;
+            document.getElementById('btnCompleteBooking').textContent = uiStrings[lang].btnCompleteBooking;
+
+            document.getElementById('navDashboard').textContent = uiStrings[lang].navDashboard;
+            document.getElementById('navMyBookings').textContent = uiStrings[lang].navMyBookings;
+            document.getElementById('navPayment').textContent = uiStrings[lang].navPayment;
+            document.getElementById('navAdmin').textContent = uiStrings[lang].navAdmin;
+
+            const originSelect = document.getElementById('originCity');
+            const destSelect = document.getElementById('destinationCity');
+            
+            const prevOrigin = originSelect.value;
+            const prevDest = destSelect.value;
+
+            originSelect.innerHTML = '';
+            destSelect.innerHTML = '';
+
+            citiesData[lang].forEach((city, index) => {
+                let opt1 = document.createElement('option');
+                opt1.value = citiesData['en'][index]; 
+                opt1.textContent = city; 
+                originSelect.appendChild(opt1);
+
+                let opt2 = document.createElement('option');
+                opt2.value = citiesData['en'][index];
+                opt2.textContent = city;
+                destSelect.appendChild(opt2);
+            });
+
+            if(prevOrigin) originSelect.value = prevOrigin;
+            if(prevDest) destSelect.value = prevDest;
+            else if(destSelect.options.length > 1) destSelect.selectedIndex = 1;
+
+            calculateFare();
+        }
+
+        // Dynamically update input placeholder based on selected payment method
+        function updatePaymentPlaceholders() {
+            const gateway = document.getElementById('paymentMethod').value;
+            const inputField = document.getElementById('accountNumberInput');
+            
+            if (gateway === 'cbe') {
+                inputField.placeholder = "e.g., 1000XXXXXXXXX (13 digits)";
+            } else {
+                inputField.placeholder = "09xxxxxxxx or +251...";
+            }
+        }
+
+        function renderSeatMatrix() {
+            const grid = document.getElementById('seatMatrixGrid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 42; i++) {
+                const seatDiv = document.createElement('div');
+                seatDiv.className = 'seat';
+                seatDiv.textContent = i < 10 ? `0${i}` : i;
+                
+                if (i === 3 || i === 7 || i === 12 || i === 19) {
+                    seatDiv.classList.add('booked');
+                } else {
+                    if (i === 4) seatDiv.classList.add('selected');
+                    seatDiv.onclick = function() {
+                        if(seatDiv.classList.contains('booked')) return;
+                        document.querySelectorAll('.seat').forEach(s => s.classList.remove('selected'));
+                        seatDiv.classList.add('selected');
+                        currentSelectedSeat = `Seat ${seatDiv.textContent}`;
+                        document.getElementById('selectedSeatInput').value = currentSelectedSeat;
+                    };
+                }
+                grid.appendChild(seatDiv);
+            }
+        }
+
+        function calculateFare() {
+            const origin = document.getElementById('originCity').value;
+            const dest = document.getElementById('destinationCity').value;
+            
+            if(origin === dest) {
+                document.getElementById('fareAmountValue').textContent = "0.00 ETB (0 km)";
+                return;
+            }
+
+            let distance = 350; 
+            if (distanceMatrix[origin] && distanceMatrix[origin][dest] !== undefined) {
+                distance = distanceMatrix[origin][dest];
+            } else if (distanceMatrix[dest] && distanceMatrix[dest][origin] !== undefined) {
+                distance = distanceMatrix[dest][origin];
+            } else {
+                let distToHubA = (distanceMatrix["Addis Ababa"] && distanceMatrix["Addis Ababa"][origin]) || 300;
+                let distToHubB = (distanceMatrix["Addis Ababa"] && distanceMatrix["Addis Ababa"][dest]) || 300;
+                distance = Math.abs(distToHubA - distToHubB) + 120;
+            }
+
+            const ratePerKm = 1.85;
+            const baseFare = 50;
+            const fare = (baseFare + (distance * ratePerKm)).toFixed(2);
+
+            document.getElementById('fareAmountValue').textContent = `${fare} ETB (~${distance} km)`;
+        }
+
+        function processBooking(e) {
+            e.preventDefault();
+
+            const gateway = document.getElementById('paymentMethod').value;
+            const accountInput = document.getElementById('accountNumberInput').value.trim();
+            const txnId = document.getElementById('txnId').value.trim();
+
+            // Validation logic depending on payment method
+            if (gateway === 'cbe') {
+                // Commercial Bank of Ethiopia standard account number format: 13 digits, typically starting with 1000
+                const cbeRegex = /^1000\d{9}$/;
+                if (!cbeRegex.test(accountInput)) {
+                    showToast("እባክዎ ትክክለኛ የንግድ ባንክ (CBE) 13 አኃዝ አካውንት ቁጥር ያስገቡ (በ 1000 የሚጀምር)!", "error");
+                    document.getElementById('accountNumberInput').focus();
+                    return;
+                }
+            } else {
+                // Telebirr / Chapa wallet phone number format (+251..., 09..., 07...)
+                const phoneRegex = /^(?:\+251|0)(9|7)\d{8}$/;
+                if (!phoneRegex.test(accountInput)) {
+                    showToast("እባክዎ ትክክለኛ የኢትዮጵያ ስልክ ቁጥር ያስገቡ! (e.g., 09xxxxxxxx)", "error");
+                    document.getElementById('accountNumberInput').focus();
+                    return;
+                }
+            }
+
+            // Transaction ID verification rule
+            if (gateway === 'telebirr' && txnId.length < 6) {
+                showToast("የቴሌብር ትራንዛክሽን ኮድ ቢያንስ 6 ፊደላት/ቁጥሮች ሊኖሩት ይገባል!", "error");
+                document.getElementById('txnId').focus();
+                return;
+            } else if (gateway === 'cbe' && txnId.length < 5) {
+                showToast("እባክዎ ትክክለኛ የባንክ የክፍያ ማረጋገጫ ቁጥር ያስገቡ!", "error");
+                document.getElementById('txnId').focus();
+                return;
+            }
+
+            const originText = document.getElementById('originCity');
+            const destText = document.getElementById('destinationCity');
+            const originName = originText.options[originText.selectedIndex].text;
+            const destName = destText.options[destText.selectedIndex].text;
+
+            const bookingData = {
+                ticketNo: 'ETS-' + Math.floor(100000 + Math.random() * 900000),
+                origin: originName,
+                destination: destName,
+                date: document.getElementById('travelDate').value,
+                bus: document.getElementById('busOperator').value,
+                seat: currentSelectedSeat,
+                fare: document.getElementById('fareAmountValue').textContent,
+                paymentMethod: gateway,
+                accountUsed: accountInput,
+                txnId: txnId,
+                passenger: localStorage.getItem('current_user') || localStorage.getItem('logged_in_user') || 'Mulualem Ayehu'
+            };
+
+            localStorage.setItem('user_booking', JSON.stringify(bookingData));
+            
+            showToast("Payment Account Verified & Booking Confirmed Successfully! 🎉", "success");
+
+            setTimeout(() => {
+                window.location.href = 'ticket.html';
+            }, 1500);
+        }
+
+        window.onload = function() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('travelDate').valueAsDate = tomorrow;
+
+            renderSeatMatrix();
+
+            const savedLang = localStorage.getItem('ets_lang') || 'am';
+            document.getElementById('langSelect').value = savedLang;
+            switchLanguage();
+            updatePaymentPlaceholders();
+        };
     </script>
+
 </body>
 </html>

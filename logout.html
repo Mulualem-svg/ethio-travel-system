@@ -11,11 +11,11 @@
         <h2>Logging out...</h2>
         <p>You are being safely signed out of Ethio Travel System.</p>
     </div>
-    <script>
-        localStorage.removeItem('user');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1000);
-    </script>
+   <script>
+    localStorage.removeItem('logged_in_user');
+    localStorage.removeItem('current_user');
+    alert('You have been logged out safely.');
+    window.location.href = 'index.html';
+</script>
 </body>
 </html>

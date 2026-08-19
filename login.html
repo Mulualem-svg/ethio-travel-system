@@ -3,46 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - Ethio Travel System</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --primary: #1e3d59;
+            --accent: #17b978;
+            --accent-dark: #0e915d;
+            --bg-color: #f5f7fa;
+            --card-bg: #1e1e1e;
+            --text-main: #ffffff;
+            --text-muted: #8d99ae;
+            --border-color: #333333;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('bus-bg.jpg'); /* placeholder or your background */
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #ffffff;
+            color: #2b2d42;
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border-left: 5px solid var(--accent);
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* Login Box */
+        .login-card {
+            background: rgba(30, 30, 30, 0.9);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            width: 380px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 25px;
+            color: #38bdf8;
+            font-size: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-login:hover {
+            background-color: #0369a1;
+        }
+
+        .login-links {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .login-links a {
+            color: #38bdf8;
+            text-decoration: none;
+        }
+
+        .login-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
-<body class="dark-mode">
+<body>
 
-    <button onclick="toggleTheme()" class="theme-toggle-btn" title="Toggle Theme">🌓</button>
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
-    <div class="auth-box hero-bg">
-        <h2>Login to Your Account</h2>
-        <form id="loginForm">
-            <input type="text" id="loginUser" name="username" placeholder="Username" autocomplete="username" required>
-            <input type="password" id="loginPass" name="password" placeholder="Password" autocomplete="current-password" required>
-            <button type="submit" class="btn-primary">Login</button>
+    <div class="login-card">
+        <h2>User Login</h2>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn-login">Login</button>
         </form>
-
-        <p style="margin-top: 15px;">Don't have an account? <a href="register.html" style="color: #3498db;">Register here</a> | <a href="index.html" style="color: #3498db;">Back to Home</a></p>
+        <div class="login-links">
+            Don't have an account? <a href="register.html">Register here</a> | <a href="index.html">Back to Home</a>
+        </div>
     </div>
 
     <script>
-    // Autofill suggestions if previously registered
-    window.addEventListener('DOMContentLoaded', () => {
-        const savedUser = localStorage.getItem('registered_user');
-        const savedPass = localStorage.getItem('registered_pass');
-        if(savedUser) document.getElementById('loginUser').value = savedUser;
-        if(savedPass) document.getElementById('loginPass').value = savedPass;
-    });
+        function showToast(message, type = 'success') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const user = document.getElementById('loginUser').value;
-        localStorage.setItem('current_user', user);
-        window.location.href = 'dashboard.html';
-    });
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeftColor = type === 'success' ? '#17b978' : '#ef4444';
+            toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> <span>${message}</span>`;
+            
+            container.appendChild(toast);
 
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    }
-    if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.remove('dark-mode');
-    }
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            
+            // Replaced the boring alert() with your clean showToast function!
+            showToast("Login successful! Welcome back, " + username);
+
+            // Optional: Redirect after a short delay so the user sees the toast
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        }
     </script>
 </body>
 </html>
